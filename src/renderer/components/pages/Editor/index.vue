@@ -1,14 +1,26 @@
 <template>
     <div class="editor-box h100">
-      <textarea  class="h100" v-model="content"></textarea>
+      <codemirror class="h100" :value="content" :options="editorConfig"></codemirror>
+      <!-- <textarea  class="h100" v-model="content"></textarea> -->
     </div>
 </template>
 <script>
 import menu from '../../../assets/menu.js'
+require('codemirror/mode/javascript/javascript')
+require('codemirror/mode/vue/vue')
+require('codemirror/addon/hint/show-hint.js')
+require('codemirror/addon/hint/show-hint.css')
+require('codemirror/addon/hint/javascript-hint.js')
+require('codemirror/theme/base16-dark.css')
 export default {
   data () {
     return {
-      content: ''
+      content: '',
+      editorConfig: {
+        mode: 'javascript',
+        lineNumbers: true,
+        theme: 'base16-dark'
+      }
     }
   },
   watch: {
@@ -50,6 +62,9 @@ export default {
   display: block;
   color: #eee;
   background-color: #333;
+}
+.editor-box .CodeMirror{
+  height: 100%;
 }
 </style>
 
