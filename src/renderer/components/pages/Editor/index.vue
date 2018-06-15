@@ -1,7 +1,13 @@
 <template>
-    <div class="editor-box h100">
-      <codemirror class="h100" :value="content" :options="editorConfig"></codemirror>
-      <!-- <textarea  class="h100" v-model="content"></textarea> -->
+    <div class="editor-box f100">
+      <div class="flex f100">
+        <div class="fl fl3 f100">
+          <v-jstree class="file-tree" :data="data" allow-batch whole-row @item-click="itemClick"></v-jstree>
+        </div>
+        <div class="fl fl9 f100">
+          <codemirror class="f100" :value="content" :options="editorConfig"></codemirror>
+        </div>
+      </div>
     </div>
 </template>
 <script>
@@ -20,7 +26,77 @@ export default {
         mode: 'javascript',
         lineNumbers: true,
         theme: 'base16-dark'
-      }
+      },
+      data: [
+        {
+          'text': 'Same but with checkboxes',
+          'children': [
+            {
+              'text': 'initially selected',
+              'selected': true
+            },
+            {
+              'text': 'custom icon',
+              'icon': 'fa fa-warning icon-state-danger'
+            },
+            {
+              'text': 'initially open',
+              'icon': 'fa fa-folder icon-state-default',
+              'opened': true,
+              'children': [
+                {
+                  'text': 'Another node'
+                }
+              ]
+            },
+            {
+              'text': 'custom icon',
+              'icon': 'fa fa-warning icon-state-warning'
+            },
+            {
+              'text': 'disabled node',
+              'icon': 'fa fa-check icon-state-success',
+              'disabled': true
+            }
+          ]
+        },
+        {
+          'text': 'Same but with checkboxes',
+          'opened': true,
+          'children': [
+            {
+              'text': 'initially selected',
+              'selected': true
+            },
+            {
+              'text': 'custom icon',
+              'icon': 'fa fa-warning icon-state-danger'
+            },
+            {
+              'text': 'initially open',
+              'icon': 'fa fa-folder icon-state-default',
+              'opened': true,
+              'children': [
+                {
+                  'text': 'Another node'
+                }
+              ]
+            },
+            {
+              'text': 'custom icon',
+              'icon': 'fa fa-warning icon-state-warning'
+            },
+            {
+              'text': 'disabled node',
+              'icon': 'fa fa-check icon-state-success',
+              'disabled': true
+            }
+          ]
+        },
+        {
+          'text': 'And wholerow selection'
+        }
+      ]
     }
   },
   watch: {
@@ -34,6 +110,9 @@ export default {
     // editBlur () {
     //   this.$store.commit('SET_FILE', this.content)
     // },
+    itemClick (node) {
+      console.log(node.model.text + ' clicked !')
+    },
     init () {
       // console.log(this)
     }
@@ -54,7 +133,16 @@ export default {
 }
 </script>
 <style>
-.editor-box textarea{
+.editor-box .file-tree {
+  color: #ccc!important;
+}
+.editor-box .file-tree li{
+  word-break: break-all;
+}
+.editor-box .file-tree .tree-ocl{
+  display: none;
+}
+/* .editor-box textarea{
   width: 100%;
   padding: 10px;
   outline: none;
@@ -62,7 +150,7 @@ export default {
   display: block;
   color: #eee;
   background-color: #333;
-}
+} */
 .editor-box .CodeMirror{
   height: 100%;
 }
