@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import VueCodeMirror from 'vue-codemirror-lite'
+import VJstree from 'vue-jstree'
 
 import App from './App'
 import router from './router'
@@ -12,6 +13,7 @@ Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 Vue.use(eventBus)
 Vue.use(VueCodeMirror)
+Vue.use(VJstree)
 /* eslint-disable no-new */
 new Vue({
   components: { App },
