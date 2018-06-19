@@ -57,3 +57,35 @@ html,body{
 .fl-right-space{ padding-right: 15px; }
 .fl-bottom-space{ padding-bottom: 15px; }
 .fl-left-space{ padding-left: 15px; }
+
+.scroll{
+  overflow-x: auto;
+  overflow-y: auto;
+}
+.scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll::-webkit-scrollbar-thumb{
+  background: rgba(255, 255, 255, .3);
+  border-radius: 4px;
+}
+
+.CodeMirror-hscrollbar::-webkit-scrollbar,
+.CodeMirror-vscrollbar::-webkit-scrollbar{
+  width: 10px;
+  height: 10px;
+}
+.CodeMirror-hscrollbar::-webkit-scrollbar-thumb,
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb{
+  background: rgba(255, 255, 255, .3);
+  border-radius: 4px;
+}
+.CodeMirror-scrollbar-filler{
+    display: none!important;
+}
+.scroll::-webkit-scrollbar-corner,
+.CodeMirror-hscrollbar::-webkit-scrollbar-corner,
+.CodeMirror-vscrollbar::-webkit-scrollbar-corner{
+    display: none;
+}

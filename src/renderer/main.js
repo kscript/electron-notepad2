@@ -7,13 +7,17 @@ import App from './App'
 import router from './router'
 import store from './store'
 import eventBus from './assets/eventBus'
+import file from './assets/file.js'
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 Vue.use(eventBus)
-Vue.use(VueCodeMirror)
+Vue.use(VueCodeMirror, {
+  events: ['changes']
+})
 Vue.use(VJstree)
+Vue.prototype.$file = file
 /* eslint-disable no-new */
 new Vue({
   components: { App },

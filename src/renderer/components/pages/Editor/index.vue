@@ -1,17 +1,29 @@
 <template>
     <div class="editor-box f100">
       <div class="flex f100">
-        <div class="fl fl3 f100">
-          <v-jstree class="file-tree" :data="data" allow-batch whole-row @item-click="itemClick"></v-jstree>
+        <div class="scroll">
+          <v-jstree class="file-tree scroll" :style="{width: asideW + 'px', height: '100%'}" :data="data" allow-batch whole-row @item-click="itemClick"></v-jstree>
         </div>
-        <div class="fl fl9 f100">
-          <codemirror class="f100" :value="content" :options="editorConfig"></codemirror>
+        <div class="scroll" style="overflow-x: auto;">
+          <v-deformation
+            style="height: 100%;right: 0; width: auto;"
+            :x="205"
+            :draggable="2"
+            :resizable="2"
+            :showHandler="false"
+            :move="true"
+            size="w"
+            axis="x"
+            @resizing="onResizing">
+            <codemirror class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges" ></codemirror>
+          </v-deformation>
         </div>
       </div>
     </div>
 </template>
 <script>
 import menu from '../../../assets/menu.js'
+import deformation from '../../common/deformation.vue'
 require('codemirror/mode/javascript/javascript')
 require('codemirror/mode/vue/vue')
 require('codemirror/addon/hint/show-hint.js')
@@ -22,82 +34,57 @@ export default {
   data () {
     return {
       content: '',
+      asideW: 200,
       editorConfig: {
         mode: 'javascript',
         lineNumbers: true,
         theme: 'base16-dark'
       },
-      data: [
+      data: [],
+      treedata: [
         {
-          'text': 'Same but with checkboxes',
-          'children': [
+          text: 'web',
+          opened: true,
+          isLeaf: true,
+          children: [
             {
-              'text': 'initially selected',
-              'selected': true
-            },
-            {
-              'text': 'custom icon',
-              'icon': 'fa fa-warning icon-state-danger'
-            },
-            {
-              'text': 'initially open',
-              'icon': 'fa fa-folder icon-state-default',
-              'opened': true,
-              'children': [
+              text: 'electron',
+              opened: true,
+              isLeaf: true,
+              children: [
                 {
-                  'text': 'Another node'
+                  icon: 'tree-file',
+                  // isLeaf: true,
+                  text: 'package.json'
                 }
               ]
-            },
-            {
-              'text': 'custom icon',
-              'icon': 'fa fa-warning icon-state-warning'
-            },
-            {
-              'text': 'disabled node',
-              'icon': 'fa fa-check icon-state-success',
-              'disabled': true
             }
           ]
         },
         {
-          'text': 'Same but with checkboxes',
-          'opened': true,
-          'children': [
+          text: 'web',
+          opened: true,
+          isLeaf: true,
+          children: [
             {
-              'text': 'initially selected',
-              'selected': true
-            },
-            {
-              'text': 'custom icon',
-              'icon': 'fa fa-warning icon-state-danger'
-            },
-            {
-              'text': 'initially open',
-              'icon': 'fa fa-folder icon-state-default',
-              'opened': true,
-              'children': [
+              text: 'electron',
+              opened: true,
+              isLeaf: true,
+              children: [
                 {
-                  'text': 'Another node'
+                  icon: 'tree-file',
+                  // isLeaf: true,
+                  text: 'package.json'
                 }
               ]
-            },
-            {
-              'text': 'custom icon',
-              'icon': 'fa fa-warning icon-state-warning'
-            },
-            {
-              'text': 'disabled node',
-              'icon': 'fa fa-check icon-state-success',
-              'disabled': true
             }
           ]
-        },
-        {
-          'text': 'And wholerow selection'
         }
       ]
     }
+  },
+  components: {
+    'v-deformation': deformation
   },
   watch: {
     content: {
@@ -107,20 +94,49 @@ export default {
     }
   },
   methods: {
-    // editBlur () {
-    //   this.$store.commit('SET_FILE', this.content)
-    // },
-    itemClick (node) {
-      console.log(node.model.text + ' clicked !')
+    editChanges (val) {
+      this.$store.commit('SET_FILE', val)
+    },
+    onResizing (left, top, width, height) {
+      this.asideW = left
+      // console.log(arguments)
+    },
+    itemClick (node, item) {
+      item.opened = !item.opened
+      this.$nextTick(() => {
+        if (item.type === 'file') {
+          this.$file.readFile(item.path, (err, data) => {
+            if (err === null) {
+              this.$store.commit('SET_FILE', data)
+              item.opened = !item.opened
+            }
+          })
+        } else {
+          if (item.opened) {
+            this.$set(item, 'loading', true)
+            let dir = this.$file.fileDisplay(item.path)
+            this.$set(item, 'loading', false)
+            this.$set(item, 'children', dir.children || dir)
+          }
+        }
+      })
     },
     init () {
       // console.log(this)
     }
   },
   created () {
+    // console.log(this)
+    this.$store.commit('SET_DIR', this.$store.getters.dir)
     this.$store.watch((state) => {
       this.content = state.Counter.file
       return state.Counter.file
+    }, (val) => {
+      // console.log(val)
+    })
+    this.$store.watch((state) => {
+      this.data = [JSON.parse(JSON.stringify(state.Counter.dir))]
+      return state.Counter.dir
     }, (val) => {
       // console.log(val)
     })
@@ -139,8 +155,11 @@ export default {
 .editor-box .file-tree li{
   word-break: break-all;
 }
-.editor-box .file-tree .tree-ocl{
+.editor-box .file-tree .tree-last .tree-ocl{
   display: none;
+}
+.editor-box .file-tree .tree-loading .tree-ocl{
+  display: inline-block;
 }
 /* .editor-box textarea{
   width: 100%;
