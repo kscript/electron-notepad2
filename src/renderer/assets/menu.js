@@ -5,13 +5,32 @@ let { MenuItem, Menu } = remote
 export const headMenu = function () {
   const template = [
     {
-      label: '编辑',
+      label: '文件',
       submenu: [
+        {
+          label: '打开文件夹',
+          accelerator: 'CommandOrControl + O',
+          click () {
+            let dir = {}
+            let path = file.openDirectory(['openDirectory'])
+            if (path && path[0]) {
+              dir.selected = path[0]
+              store.commit('SET_DIR', file.fileDisplay(path[0]))
+            }
+          }
+        },
+        {
+          label: '新建文件',
+          accelerator: 'CommandOrControl + O',
+          click () {
+            store.commit('SET_FILE', '')
+          }
+        },
         {
           label: '打开文件',
           accelerator: 'CommandOrControl + O',
           click () {
-            file.readFile((err, data) => {
+            file.selectFile((err, data) => {
               if (err === null) {
                 store.commit('SET_FILE', data)
               }
@@ -24,8 +43,9 @@ export const headMenu = function () {
           click () {
             let text = store.getters.file
             text = text.replace(/\n/g, '\r\n')
+            console.log(store, text)
             file.setFilePath(filename => {
-              file.fs.writeFile(filename, text, function () {
+              filename && file.fs.writeFile(filename, text, function () {
                 // console.log(arguments)
               })
             })
