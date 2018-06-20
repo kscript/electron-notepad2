@@ -5,25 +5,6 @@ import { remote } from 'electron'
 const { dialog } = remote
 const ignore = 'node_modules,.git'.split(',')
 
-// class Pathids {
-//   constructor () {
-//     this.id = 0
-//     this.maps = {}
-//   }
-//   set (item) {
-//     this.maps[this.id++] = item
-//   }
-//   get (id) {
-//     return this.maps[id]
-//   }
-//   all () {
-//     return this.maps
-//   }
-//   toString () {
-//     return JSON.stringify(this.maps)
-//   }
-// }
-
 export const openDirectory = function (conf) {
   return dialog.showOpenDialog({ properties: conf || ['openFile', 'openDirectory', 'multiSelections'] })
 }
@@ -87,7 +68,7 @@ export const fileDisplay = function (filePath, deep) {
           }
         }
       } catch (e) {
-        console.log(e)
+        // console.log(e)
       }
     }
   })
