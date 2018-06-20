@@ -1,20 +1,47 @@
 *{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 html,body{
-    height: 100%;
+  height: 100%;
 }
 #app{
-    background-color: #333;
+  background-color: #333;
 }
 .f100{
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 .text-white{
-    color: #fff;
+  color: #fff;
+}
+@font-face {
+  font-family: "iconfont";
+  src: url('/static/fonts/iconfont.eot?t=1529395113859'); /* IE9*/
+  src: url('/static/fonts/iconfont.eot?t=1529395113859#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('/static/fonts/iconfont.woff?t=1529395113859') format('woff'),
+  url('/static/fonts/iconfont.ttf?t=1529395113859') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+  url('/static/fonts/iconfont.svg?t=1529395113859#iconfont') format('svg'); /* iOS 4.1- */
+}
+i,.iconfont {
+  font-family: "iconfont" !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  text-rendering: auto;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  vertical-align: baseline;
+}
+.icon-close:before{
+  content: "\e86e";
+}
+.icon-file:before{
+  content: "\e600";
 }
 .fl,.flex{ display: -webkit-flex;display: flex; }
 .fl-start{ justify-content: flex-start; }
@@ -82,10 +109,16 @@ html,body{
   border-radius: 4px;
 }
 .CodeMirror-scrollbar-filler{
-    display: none!important;
+  display: none!important;
 }
 .scroll::-webkit-scrollbar-corner,
 .CodeMirror-hscrollbar::-webkit-scrollbar-corner,
 .CodeMirror-vscrollbar::-webkit-scrollbar-corner{
-    display: none;
+  display: none;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

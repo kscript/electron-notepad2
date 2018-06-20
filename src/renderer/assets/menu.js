@@ -1,7 +1,7 @@
 import store from '../store'
 import { remote } from 'electron'
 import file from './file.js'
-let { MenuItem, Menu } = remote
+let { Menu } = remote
 export const headMenu = function () {
   const template = [
     {
@@ -100,60 +100,60 @@ export const headMenu = function () {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
 export const contentMenu = function () {
-  const menu = new Menu()
-  menu.append(new MenuItem({
-    role: 'copy',
-    label: '复制',
-    click () {
-      console.log(this, arguments)
-    }
-  }))
-  menu.append(new MenuItem({
-    role: 'cut',
-    label: '剪切',
-    click () {
-      console.log(this, arguments)
-    }
-  }))
-  menu.append(new MenuItem({
-    role: 'paste',
-    label: '粘贴',
-    click () {
-      console.log(this, arguments)
-    }
-  }))
-  menu.append(new MenuItem({
-    role: 'delete',
-    label: '删除',
-    click () {
-      console.log(this, arguments)
-    }
-  }))
-  menu.append(new MenuItem({
-    type: 'separator'
-  }))
-  // menu.append(new MenuItem({ role: 'toggledevtools', label: '审查元素', click() { console.log(this, arguments) } }))
-  menu.append(new MenuItem({
-    role: 'reload',
-    label: '刷新',
-    click () {
-      console.log(this, arguments)
-    }
-  }))
-  menu.append(new MenuItem({
-    role: 'quit',
-    label: '退出',
-    click () {
-      console.log(this, arguments)
-    }
-  }))
+  // const menu = new Menu()
+  // menu.append(new MenuItem({
+  //   role: 'copy',
+  //   label: '复制',
+  //   click () {
+  //     console.log(this, arguments)
+  //   }
+  // }))
+  // menu.append(new MenuItem({
+  //   role: 'cut',
+  //   label: '剪切',
+  //   click () {
+  //     console.log(this, arguments)
+  //   }
+  // }))
+  // menu.append(new MenuItem({
+  //   role: 'paste',
+  //   label: '粘贴',
+  //   click () {
+  //     console.log(this, arguments)
+  //   }
+  // }))
+  // menu.append(new MenuItem({
+  //   role: 'delete',
+  //   label: '删除',
+  //   click () {
+  //     console.log(this, arguments)
+  //   }
+  // }))
+  // menu.append(new MenuItem({
+  //   type: 'separator'
+  // }))
+  // // menu.append(new MenuItem({ role: 'toggledevtools', label: '审查元素', click() { console.log(this, arguments) } }))
+  // menu.append(new MenuItem({
+  //   role: 'reload',
+  //   label: '刷新',
+  //   click () {
+  //     console.log(this, arguments)
+  //   }
+  // }))
+  // menu.append(new MenuItem({
+  //   role: 'quit',
+  //   label: '退出',
+  //   click () {
+  //     console.log(this, arguments)
+  //   }
+  // }))
 
-  window.addEventListener('contextmenu', (e) => {
-    e.preventDefault()
-    menu.popup({
-      window: remote.getCurrentWindow()
-    })
-  }, false)
+  // window.addEventListener('contextmenu', (e) => {
+  //   e.preventDefault()
+  //   menu.popup({
+  //     window: remote.getCurrentWindow()
+  //   })
+  // }, false)
 }
 
 export default {
