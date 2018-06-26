@@ -1,5 +1,5 @@
 <template>
-  <div class="vdr" id="vdr" :class="{ draggable: draggable && !disable, resizable: resizable && !disable, active , dragging, resizing}" @mousedown.stop="elmDown" tabindex="0" :style="style">
+  <div class="vdr" id="vdr" :class="{ draggable: draggable && !disable, resizable: resizable && !disable, active , dragging, resizing}" @mousedown="elmDown" tabindex="0" :style="style">
     <!-- 如果可改变大小为真 -->
     <template v-if="resizable && !disable">
       <!-- 待优化 -->
@@ -170,7 +170,7 @@ export default {
     elmDown(e) {
       // 组件被按下事件
       // 阻止默认事件
-      e.preventDefault()
+      // e.preventDefault()
       const passiveSupported = this.passiveSupported
       // 判断是否支持拖动
       if (this.disable || !this.draggable) return
