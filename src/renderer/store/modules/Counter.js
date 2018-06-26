@@ -1,7 +1,8 @@
 const state = {
   main: 0,
   dir: {},
-  file: ''
+  file: '',
+  currentfile: ''
 }
 
 const mutations = {
@@ -13,6 +14,10 @@ const mutations = {
     state.dir = val
     setLocal('dir', JSON.stringify(val))
   },
+  SET_CURRENT (state, val) {
+    state.currentfile = val
+    // setLocal('currentfile', JSON.stringify(val))
+  },
   DECREMENT_MAIN_COUNTER (state) {
     state.main--
   },
@@ -23,6 +28,9 @@ const mutations = {
 const getters = {
   file (state) {
     return state.file || getLocal('file')
+  },
+  currentfile (state) {
+    return state.currentfile
   },
   dir (state) {
     return getStore(state, 'dir')

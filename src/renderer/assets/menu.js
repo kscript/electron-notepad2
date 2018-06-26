@@ -1,7 +1,10 @@
-import store from '../store'
+// import Vue from 'Vue'
+// import store from '../store'
 import { remote } from 'electron'
-import file from './file.js'
+import { Bus } from './eventBus'
+// import file from './file.js'
 let { Menu } = remote
+
 export const headMenu = function () {
   const template = [
     {
@@ -11,44 +14,50 @@ export const headMenu = function () {
           label: '打开文件夹',
           accelerator: 'CommandOrControl + O',
           click () {
-            let dir = {}
-            let path = file.openDirectory(['openDirectory'])
-            if (path && path[0]) {
-              dir.selected = path[0]
-              store.commit('SET_DIR', file.fileDisplay(path[0]))
-            }
+            Bus.$emit('setDir')
           }
         },
         {
           label: '新建文件',
           accelerator: 'CommandOrControl + O',
           click () {
-            store.commit('SET_FILE', '')
+            Bus.$emit('newFile')
           }
         },
         {
           label: '打开文件',
           accelerator: 'CommandOrControl + O',
           click () {
-            file.selectFile((err, data) => {
-              if (err === null) {
-                store.commit('SET_FILE', data)
-              }
-            })
+            Bus.$emit('openFile')
+          }
+        },
+        {
+          label: '保存文件',
+          accelerator: 'CommandOrControl + S',
+          click () {
+            Bus.$emit('saveFile')
+            // let text = store.getters.file
+            // let path = store.getters.currentfile
+            // if (path) {
+            //   text = text.replace(/\n/g, '\r\n')
+            //   file.fs.writeFile(path, text, function () {
+            //     // console.log(arguments)
+            //   })
+            // }
           }
         },
         {
           label: '另存为',
           accelerator: 'Shift + CommandOrControl + S',
           click () {
-            let text = store.getters.file
-            text = text.replace(/\n/g, '\r\n')
-            console.log(store, text)
-            file.setFilePath(filename => {
-              filename && file.fs.writeFile(filename, text, function () {
-                // console.log(arguments)
-              })
-            })
+            Bus.$emit('saveAsFile')
+            // let text = store.getters.file
+            // text = text.replace(/\n/g, '\r\n')
+            // file.setFilePath(filename => {
+            //   filename && file.fs.writeFile(filename, text, function () {
+            //     // console.log(arguments)
+            //   })
+            // })
           }
         }
         // { role: 'undo', label: '撤销' },

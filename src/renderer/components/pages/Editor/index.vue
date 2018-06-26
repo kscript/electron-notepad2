@@ -2,7 +2,7 @@
     <div class="editor-box f100">
       <div class="flex f100">
         <div class="scroll">
-          <v-jstree class="file-tree scroll" :style="{width: asideW + 'px', height: '100%'}" :data="data" allow-batch whole-row @item-click="itemClick"></v-jstree>
+          <v-jstree class="file-tree scroll" :style="{width: asideW + 'px', height: '100%', overflowX: 'hidden'}" :data="data" allow-batch whole-row @item-click="itemClick"></v-jstree>
         </div>
         <div class="scroll" style="overflow-x: auto;">
           <v-deformation
@@ -16,10 +16,10 @@
             size="w"
             axis="x"
             @resizing="onResizing">
-            <div class="name-list ellipsis">
-              <ul class="list-group" v-if="files.length > 0" v-sortable>
-                <li class="list-group-item" v-sortable v-for="(vo, index) in files" :key="index">
-                  <div class="label" :class="{'active': currentFile === vo.path}" @click="clickTab(vo)">
+            <div class="name-list ellipsis" v-if="files.length > 0">
+              <ul class="list-group" v-sortable="{onUpdate: onUpdate}">
+                <li class="list-group-item" v-for="(vo, index) in files" :key="index">
+                  <div class="label" :class="{'active': currentPath === vo.path}" @click="clickTab(vo)" :title="vo.text">
                     <cite>
                       <i class="icon-file handler-icon">&nbsp;</i>
                       {{vo.text}}
@@ -55,10 +55,11 @@ export default {
         lineNumbers: true,
         theme: 'base16-dark'
       },
+      newFileNum: 1,
       files: [],
       pathMap: {},
       nextFile: '',
-      currentFile: '',
+      currentPath: '',
       nextId: 0,
       data: [],
       treedata: [
@@ -69,18 +70,21 @@ export default {
     'v-deformation': deformation
   },
   watch: {
-    content: {
-      handler (newVal) {
-        this.$store.commit('SET_FILE', newVal)
-      }
-    }
+    // content: {
+    //   handler (newVal) {
+    //     this.$store.commit('SET_FILE', newVal)
+    //   }
+    // }
   },
   methods: {
+    onUpdate (event) {
+      this.files.splice(event.newIndex, 0, this.files.splice(event.oldIndex, 1)[0])
+    },
     clickTab (vo) {
-      this.currentFile = vo.path
-      this.$file.readFile(this.currentFile, (err, data) => {
+      this.currentPath = vo.path
+      this.$file.readFile(this.currentPath, (err, data) => {
         if (err === null) {
-          this.$store.commit('SET_FILE', data)
+          this.content = data
         }
       })
     },
@@ -90,19 +94,19 @@ export default {
       if (len === 1) {
         this.content = ''
       } else if (len > 1) {
-        if (this.currentFile === this.files[index].path) {
+        if (this.currentPath === this.files[index].path) {
           if (index === len - 1) {
             num = index - 1
           } else {
             num = index + 1
           }
-          this.nextFile = this.files[num].path
+          this.nextPath = this.files[num].path
           clearTimeout(this.nextId)
           this.nextId = setTimeout(() => {
-            this.currentFile = this.nextFile
-            this.$file.readFile(this.nextFile, (err, data) => {
+            this.currentPath = this.nextPath
+            this.$file.readFile(this.nextPath, (err, data) => {
               if (err === null) {
-                this.$store.commit('SET_FILE', data)
+                this.content = data
               }
             })
           }, 300)
@@ -113,7 +117,8 @@ export default {
       this.files.splice(index, 1)
     },
     editChanges (val) {
-      this.$store.commit('SET_FILE', val)
+      this.content = val
+      // this.$store.commit('SET_FILE', val)
     },
     onResizing (left, top, width, height) {
       this.asideW = left
@@ -128,10 +133,12 @@ export default {
               this.$set(item, 'pushed', 1)
               this.files.push(item)
             }
-            this.currentFile = item.path
+            this.currentPath = item.path
+            // this.$store.commit('SET_CURRENT', this.currentPath)
             this.$file.readFile(item.path, (err, data) => {
               if (err === null) {
-                this.$store.commit('SET_FILE', data)
+                // this.$store.commit('SET_FILE', data)
+                this.content = data
                 item.opened = !item.opened
               }
             })
@@ -151,20 +158,87 @@ export default {
     }
   },
   created () {
-    // console.log(this)
-    this.$store.commit('SET_DIR', this.$store.getters.dir)
-    this.$store.watch((state) => {
-      this.content = state.Counter.file
-      return state.Counter.file
-    }, (val) => {
-      // console.log(val)
+    console.log(this)
+    this.$bus.$off('setFile').$on('setFile', file => {
+      this.content = file
     })
-    this.$store.watch((state) => {
-      this.data = [JSON.parse(JSON.stringify(state.Counter.dir))]
-      return state.Counter.dir
-    }, (val) => {
-      // console.log(val)
+    this.$bus.$off('setPath').$on('setPath', path => {
+      this.currentPath = path
     })
+    this.$bus.$off('setDir').$on('setDir', () => {
+      let dir
+      let path = this.$file.openDirectory(['openDirectory'])
+      if (path && path[0]) {
+        dir = this.$file.fileDisplay(path[0])
+        this.$store.commit('SET_DIR', dir)
+        this.data = [dir]
+      }
+    })
+    this.$bus.$off('openFile').$on('openFile', () => {
+      this.$file.selectFile((err, data, path) => {
+        let node
+        if (err === null) {
+          data && this.$bus.$emit('setFile', data)
+          path && this.$bus.$emit('setPath', path)
+          if (path && this.files.filter(item => item.path === path).length < 1) {
+            node = {
+              icon: 'tree-file',
+              path: path,
+              text: path,
+              type: 'file',
+              pushed: 1,
+              selected: false
+            }
+            this.files.push(node)
+            this.pathMap[path] = node
+          }
+        }
+      })
+    })
+    this.$bus.$off('newFile').$on('newFile', () => {
+      let newFile = {
+        icon: 'tree-file',
+        path: 'Untitled-' + this.newFileNum,
+        text: 'Untitled-' + this.newFileNum++,
+        type: 'file',
+        newFile: 1,
+        pushed: 1,
+        selected: false
+      }
+      this.content = ''
+      this.currentPath = newFile.path
+      this.files.push(newFile)
+      this.pathMap[newFile.path] = newFile
+    })
+    this.$bus.$off('saveFile').$on('saveFile', () => {
+      let text = this.content
+      let path = this.currentPath
+      let node = this.pathMap[path]
+      if (node.newFile === 1) {
+        this.$bus.$emit('saveAsFile', path)
+      } else {
+        text = text.replace(/\n/g, '\r\n')
+        this.$file.fs.writeFile(path, text, () => {
+        })
+      }
+    })
+    this.$bus.$off('saveAsFile').$on('saveAsFile', path => {
+      let text = this.content
+      text = text.replace(/\n/g, '\r\n')
+      this.$file.setFilePath(filename => {
+        this.$file.fs.writeFile(filename, text, () => {
+          if (path) {
+            let node = this.pathMap[path]
+            node.path = filename
+            node.text = filename
+            node.newFile = 2
+            this.pathMap[filename] = node
+            delete this.pathMap[path]
+          }
+        })
+      })
+    })
+    this.data = [this.$store.getters.dir]
     this.$nextTick(() => {
       menu.headMenu()
       menu.contentMenu()
@@ -177,8 +251,15 @@ export default {
 .editor-box .file-tree {
   color: #ccc!important;
 }
+
+.editor-box .file-tree .tree-container-ul{
+  width: 100%;
+}
 .editor-box .file-tree li{
   word-break: break-all;
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
 }
 .editor-box .file-tree .tree-last .tree-ocl{
   display: none;
@@ -198,20 +279,28 @@ export default {
   padding: 0px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, .1);
 }
-.editor-box .name-list .label{
-  padding: 4px 20px 4px 8px;
-  font-size: 14px;
-  /* background: rgba(255, 255, 255, .05); */
-  /* border-radius: 3px; */
-  margin-right: 3px;
-  display: inline-block;
-}
+
 .editor-box .name-list .label cite{
   cursor: pointer;
   font-style: normal;
 }
 .editor-box .name-list .list-group-item{
   display: inline-block;
+  max-width: 120px;
+}
+
+.editor-box .name-list .label{
+  width: 100%;
+  padding: 4px 20px 4px 8px;
+  font-size: 14px;
+  /* background: rgba(255, 255, 255, .05); */
+  /* border-radius: 3px; */
+  margin-right: 3px;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .editor-box .name-list .list-group-item .label.active{
   background: rgba(0, 0, 0, .5);
@@ -226,6 +315,7 @@ export default {
   position: absolute;
   top: 50%;
   margin-top: -5px;
+  right: 3px;
   left: auto;
 }
 .editor-box .name-list .list-group-item .label:hover .icon-close,

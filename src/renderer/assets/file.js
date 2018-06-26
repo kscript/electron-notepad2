@@ -13,7 +13,9 @@ export const openFile = function (conf) {
 }
 export const selectFile = function (then) {
   var path = openFile(['openFile'])
-  return path ? fs.readFile(path[0], 'utf8', then) : then()
+  return path ? fs.readFile(path[0], 'utf8', function (err, data) {
+    then && then(err, data, path[0])
+  }) : then()
 }
 export const readFile = function (path, then) {
   return path ? fs.readFile(path, 'utf8', then) : then()
