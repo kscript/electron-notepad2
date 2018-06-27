@@ -2,7 +2,22 @@
     <div class="editor-box f100">
       <div class="flex f100">
         <div class="scroll">
-          <v-jstree class="file-tree scroll" :style="{width: asideW + 'px', height: '100%', overflowX: 'hidden'}" :data="data" allow-batch whole-row @item-click="itemClick"></v-jstree>
+          <v-jstree
+            class="file-tree scroll"
+            whole-row
+            allow-batch
+            :data="data"
+            :style="{width: asideW + 'px', height: '100%', overflowX: 'hidden'}"
+            :item-events="treeEvents"
+            @item-click="itemClick">
+            <template slot-scope="_">
+              <i :class="_.vm.themeIconClasses" role="presentation" v-if="!_.model.loading"></i>
+              <span v-html="_.model.text" v-if="!_.model.input"></span>
+              <template v-else>
+                <input v-model="editInputVal" @keyup.13="editFileName(_.model)" />
+              </template>
+            </template>
+          </v-jstree>
         </div>
         <div class="scroll" style="overflow-x: auto;">
           <v-deformation
@@ -29,14 +44,20 @@
                 </li>
               </ul>
             </div>
-            <codemirror class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges" ></codemirror>
+            <template v-if="viewmode === 'editor'">
+              <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
+            </template>
+            <template v-if="viewmode === 'markdown'">
+              <v-vuemarkdown class="md-editor-preview markdown-body f100 scroll" style="background: #fff;padding: 10px 20px;">{{content}}</v-vuemarkdown>
+            </template>
           </v-deformation>
         </div>
       </div>
     </div>
 </template>
 <script>
-import menu from '../../../assets/menu.js'
+import 'github-markdown-css'
+import VueMarkdown from 'vue-markdown'
 import deformation from '../../common/deformation.vue'
 // import { setTimeout } from 'timers';
 require('codemirror/mode/javascript/javascript')
@@ -45,15 +66,25 @@ require('codemirror/addon/hint/show-hint.js')
 require('codemirror/addon/hint/show-hint.css')
 require('codemirror/addon/hint/javascript-hint.js')
 require('codemirror/theme/base16-dark.css')
+
 export default {
   data () {
+    let self = this
     return {
+      viewmode: 'editor',
+      deformationPopup: null,
       content: '',
       asideW: 240,
+      editInputVal: '',
       editorConfig: {
         mode: 'javascript',
         lineNumbers: true,
         theme: 'base16-dark'
+      },
+      treeEvents: {
+        contextmenu () {
+          self.treeContextmenu.apply(self, arguments)
+        }
       },
       newFileNum: 1,
       files: [],
@@ -67,6 +98,7 @@ export default {
     }
   },
   components: {
+    'v-vuemarkdown': VueMarkdown,
     'v-deformation': deformation
   },
   watch: {
@@ -77,15 +109,48 @@ export default {
     // }
   },
   methods: {
+    editFileName (data) {
+      this.$set(data, 'input', 0)
+      this.$bus.$emit('rename', data)
+    },
+    treeContextmenu (node, data, $event) {
+      let self = this
+      let Menu = this.$menu.Menu
+      let MenuItem = this.$menu.MenuItem
+      let remote = this.$menu.remote
+
+      let menu = new Menu()
+      menu.append(new MenuItem({
+        label: '重命名',
+        click () {
+          self.editInputVal = data.text
+          self.$set(data, 'input', 1)
+        }
+      }))
+      if (data.type === 'file' && data.text.slice(-3) === '.md') {
+        menu.append(new MenuItem({
+          label: 'markdown文件预览',
+          click () {
+            self.itemClick2(data).then(() => {
+              self.viewmode = 'markdown'
+              data.viewmode = 'markdown'
+            })
+          }
+        }))
+      }
+      // }
+      menu.popup({
+        window: remote.getCurrentWindow()
+      })
+    },
     onUpdate (event) {
       this.files.splice(event.newIndex, 0, this.files.splice(event.oldIndex, 1)[0])
     },
     clickTab (vo) {
       this.currentPath = vo.path
-      this.$file.readFile(this.currentPath, (err, data) => {
-        if (err === null) {
-          this.content = data
-        }
+      let data = this.pathMap[vo.path]
+      this.openFile(data).then(() => {
+        this.viewmode = data.viewmode
       })
     },
     closeTab (index) {
@@ -118,14 +183,26 @@ export default {
     },
     editChanges (val) {
       this.content = val
-      // this.$store.commit('SET_FILE', val)
     },
     onResizing (left, top, width, height) {
       this.asideW = left
     },
     itemClick (node, item) {
+      if (item.input !== 1) {
+        this.openFile(item).then(() => {
+          this.viewmode = 'editor'
+          item.viewmode = 'editor'
+        })
+      }
+    },
+    itemClick2 (item) {
+      return this.openFile(item)
+    },
+    openFile (item) {
       item.opened = !item.opened
-      this.$nextTick(() => {
+      this.viewmode = 'editor'
+      return new Promise(resolve => {
+        let res
         if (item.type === 'file') {
           if (item.opened) {
             if (!item.pushed) {
@@ -140,8 +217,11 @@ export default {
                 // this.$store.commit('SET_FILE', data)
                 this.content = data
                 item.opened = !item.opened
+                resolve(res)
               }
             })
+          } else {
+            resolve(res)
           }
         } else {
           if (item.opened) {
@@ -150,6 +230,7 @@ export default {
             this.$set(item, 'loading', false)
             this.$set(item, 'children', dir.children || dir)
           }
+          resolve(res)
         }
       })
     },
@@ -162,6 +243,34 @@ export default {
     this.$bus.$off('setFile').$on('setFile', file => {
       this.content = file
     })
+    this.$bus.$off('rename').$on('rename', file => {
+      let value = this.editInputVal
+      if (file && file.path && value) {
+        if (!/(\?|\*|\||<|>|"|\/|:|\\)/.test(value)) {
+          let pathInfo = this.$path.parse(file.path)
+          let newPath = this.$path.resolve(pathInfo.dir, value)
+          let oldPath = file.path
+          if (newPath.length) {
+            this.$file.fs.rename(oldPath, newPath, error => {
+              if (error) {
+                console.log(error)
+              } else {
+                if (this.currentPath === oldPath) {
+                  this.currentPath = newPath
+                }
+                file.text = value
+                file.path = newPath
+                this.pathMap[newPath] = file
+                delete this.pathMap[oldPath]
+              }
+            })
+          }
+        }
+      }
+    })
+    this.$bus.$off('showMarkdown').$on('showMarkdown', file => {
+      this.viewmode = 'markdown'
+    })
     this.$bus.$off('setPath').$on('setPath', path => {
       this.currentPath = path
     })
@@ -170,7 +279,7 @@ export default {
       let path = this.$file.openDirectory(['openDirectory'])
       if (path && path[0]) {
         dir = this.$file.fileDisplay(path[0])
-        this.$store.commit('SET_DIR', dir)
+        this.$store.commit('SET_DIR', this.$copy(dir))
         this.data = [dir]
       }
     })
@@ -226,22 +335,23 @@ export default {
       let text = this.content
       text = text.replace(/\n/g, '\r\n')
       this.$file.setFilePath(filename => {
-        this.$file.fs.writeFile(filename, text, () => {
-          if (path) {
-            let node = this.pathMap[path]
-            node.path = filename
-            node.text = filename
-            node.newFile = 2
-            this.pathMap[filename] = node
-            delete this.pathMap[path]
-          }
-        })
+        if (filename) {
+          this.$file.fs.writeFile(filename, text, () => {
+            if (path) {
+              let node = this.pathMap[path]
+              node.path = filename
+              node.text = filename
+              node.newFile = 2
+              this.pathMap[filename] = node
+              delete this.pathMap[path]
+            }
+          })
+        }
       })
     })
     this.data = [this.$store.getters.dir]
     this.$nextTick(() => {
-      menu.headMenu()
-      menu.contentMenu()
+      this.$menu.headMenu()
       this.init()
     })
   }
