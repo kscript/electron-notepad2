@@ -3,7 +3,7 @@
 import { remote } from 'electron'
 import { Bus } from './eventBus'
 // import file from './file.js'
-let { Menu } = remote
+let { Menu, MenuItem } = remote
 
 export const headMenu = function () {
   const template = [
@@ -36,14 +36,6 @@ export const headMenu = function () {
           accelerator: 'CommandOrControl + S',
           click () {
             Bus.$emit('saveFile')
-            // let text = store.getters.file
-            // let path = store.getters.currentfile
-            // if (path) {
-            //   text = text.replace(/\n/g, '\r\n')
-            //   file.fs.writeFile(path, text, function () {
-            //     // console.log(arguments)
-            //   })
-            // }
           }
         },
         {
@@ -51,24 +43,8 @@ export const headMenu = function () {
           accelerator: 'Shift + CommandOrControl + S',
           click () {
             Bus.$emit('saveAsFile')
-            // let text = store.getters.file
-            // text = text.replace(/\n/g, '\r\n')
-            // file.setFilePath(filename => {
-            //   filename && file.fs.writeFile(filename, text, function () {
-            //     // console.log(arguments)
-            //   })
-            // })
           }
         }
-        // { role: 'undo', label: '撤销' },
-        // { role: 'redo', label: '恢复' },
-        // { type: 'separator' },
-        // { role: 'cut', label: '剪切' },
-        // { role: 'copy', label: '复制' },
-        // { role: 'paste', label: '粘贴' },
-        // { role: 'pasteandmatchstyle', label: '粘贴(保留格式)' },
-        // { role: 'delete', label: '删除' },
-        // { role: 'selectall', label: '选择全部' }
       ]
     },
     {
@@ -108,54 +84,56 @@ export const headMenu = function () {
   ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
-export const contentMenu = function () {
+export const contentMenu = function (area) {
   // const menu = new Menu()
-  // menu.append(new MenuItem({
-  //   role: 'copy',
-  //   label: '复制',
-  //   click () {
-  //     console.log(this, arguments)
-  //   }
-  // }))
-  // menu.append(new MenuItem({
-  //   role: 'cut',
-  //   label: '剪切',
-  //   click () {
-  //     console.log(this, arguments)
-  //   }
-  // }))
-  // menu.append(new MenuItem({
-  //   role: 'paste',
-  //   label: '粘贴',
-  //   click () {
-  //     console.log(this, arguments)
-  //   }
-  // }))
-  // menu.append(new MenuItem({
-  //   role: 'delete',
-  //   label: '删除',
-  //   click () {
-  //     console.log(this, arguments)
-  //   }
-  // }))
-  // menu.append(new MenuItem({
-  //   type: 'separator'
-  // }))
-  // // menu.append(new MenuItem({ role: 'toggledevtools', label: '审查元素', click() { console.log(this, arguments) } }))
-  // menu.append(new MenuItem({
-  //   role: 'reload',
-  //   label: '刷新',
-  //   click () {
-  //     console.log(this, arguments)
-  //   }
-  // }))
-  // menu.append(new MenuItem({
-  //   role: 'quit',
-  //   label: '退出',
-  //   click () {
-  //     console.log(this, arguments)
-  //   }
-  // }))
+  // if (area === undefined || area === 'main') {
+  //   menu.append(new MenuItem({
+  //     role: 'copy',
+  //     label: '复制',
+  //     click () {
+  //       console.log(this, arguments)
+  //     }
+  //   }))
+  //   menu.append(new MenuItem({
+  //     role: 'cut',
+  //     label: '剪切',
+  //     click () {
+  //       console.log(this, arguments)
+  //     }
+  //   }))
+  //   menu.append(new MenuItem({
+  //     role: 'paste',
+  //     label: '粘贴',
+  //     click () {
+  //       console.log(this, arguments)
+  //     }
+  //   }))
+  //   menu.append(new MenuItem({
+  //     role: 'delete',
+  //     label: '删除',
+  //     click () {
+  //       console.log(this, arguments)
+  //     }
+  //   }))
+  //   menu.append(new MenuItem({
+  //     type: 'separator'
+  //   }))
+  //   // menu.append(new MenuItem({ role: 'toggledevtools', label: '审查元素', click() { console.log(this, arguments) } }))
+  //   menu.append(new MenuItem({
+  //     role: 'reload',
+  //     label: '刷新',
+  //     click () {
+  //       console.log(this, arguments)
+  //     }
+  //   }))
+  //   menu.append(new MenuItem({
+  //     role: 'quit',
+  //     label: '退出',
+  //     click () {
+  //       console.log(this, arguments)
+  //     }
+  //   }))
+  // }
 
   // window.addEventListener('contextmenu', (e) => {
   //   e.preventDefault()
@@ -167,5 +145,8 @@ export const contentMenu = function () {
 
 export default {
   headMenu,
-  contentMenu
+  contentMenu,
+  remote,
+  Menu,
+  MenuItem
 }
