@@ -14,7 +14,7 @@
               <i :class="_.vm.themeIconClasses" role="presentation" v-if="!_.model.loading"></i>
               <span v-html="_.model.text" v-if="!_.model.input"></span>
               <template v-else>
-                <input v-model="editInputVal" @keyup.13="editFileName(_.model)" />
+                <input v-model="editInputVal" @keyup.13="editFileName(_.model)" @blur="editFileNameBlur(_.model)"/>
               </template>
             </template>
           </v-jstree>
@@ -112,6 +112,9 @@ export default {
     editFileName (data) {
       this.$set(data, 'input', 0)
       this.$bus.$emit('rename', data)
+    },
+    editFileNameBlur (data) {
+      this.$set(data, 'input', 0)
     },
     treeContextmenu (node, data, $event) {
       let self = this
@@ -357,103 +360,92 @@ export default {
   }
 }
 </script>
-<style>
-.editor-box .file-tree {
-  color: #ccc!important;
-}
-
-.editor-box .file-tree .tree-container-ul{
-  width: 100%;
-}
-.editor-box .file-tree li{
-  word-break: break-all;
-  overflow: hidden;
-  text-overflow:ellipsis;
-  white-space: nowrap;
-}
-.editor-box .file-tree .tree-last .tree-ocl{
-  display: none;
-}
-.editor-box .file-tree .tree-loading .tree-ocl{
-  display: inline-block;
-}
-.editor-box .name-list{
-  height: 24px;
-  width: 100%;
-  background-color: #282828;
-  /* display: none; */
-  position: relative;
-  z-index: 20;
-  color: #ccc;
-  cursor: auto;
-  padding: 0px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, .1);
-}
-
-.editor-box .name-list .label cite{
-  cursor: pointer;
-  font-style: normal;
-}
-.editor-box .name-list .list-group-item{
-  display: inline-block;
-  max-width: 120px;
-}
-
-.editor-box .name-list .label{
-  width: 100%;
-  padding: 4px 20px 4px 8px;
-  font-size: 14px;
-  /* background: rgba(255, 255, 255, .05); */
-  /* border-radius: 3px; */
-  margin-right: 3px;
-  display: inline-block;
-  position: relative;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.editor-box .name-list .list-group-item .label.active{
-  background: rgba(0, 0, 0, .5);
-}
-.editor-box .name-list .label .icon-close{
-  color: #ccc;
-  font-size: 10px;
-  font-weight: bold;
-  display: none;
-  margin-left: 2px;
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  margin-top: -5px;
-  right: 3px;
-  left: auto;
-}
-.editor-box .name-list .list-group-item .label:hover .icon-close,
-.editor-box .name-list .list-group-item .label.active .icon-close{
-  display: inline;
-}
-
-.editor-box .editor-el{
-  height: 100%!important;
-  right: 0!important;
-  width: auto!important;
-  cursor: auto!important;
-}
-.editor-box .editor-el.movedown{
-  padding-top: 24px!important;
-  margin-top: -24px;
-}
-/* .editor-box textarea{
-  width: 100%;
-  padding: 10px;
-  outline: none;
-  resize: none;
-  display: block;
-  color: #eee;
-  background-color: #333;
-} */
-.editor-box .CodeMirror{
-  height: 100%;
+<style lang="scss">
+.editor-box {
+  .file-tree {
+    color: #ccc!important;
+    .tree-container-ul{
+      width: 100%;
+    }
+    li{
+      word-break: break-all;
+      overflow: hidden;
+      text-overflow:ellipsis;
+      white-space: nowrap;
+    }
+    .tree-last .tree-ocl{
+      display: none;
+    }
+    .tree-loading .tree-ocl{
+      display: inline-block;
+    }
+  }
+  .name-list{
+    height: 24px;
+    width: 100%;
+    background-color: #282828;
+    /* display: none; */
+    position: relative;
+    z-index: 20;
+    color: #ccc;
+    cursor: auto;
+    padding: 0px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+    .label{
+      width: 100%;
+      padding: 4px 20px 4px 8px;
+      font-size: 14px;
+      /* background: rgba(255, 255, 255, .05); */
+      /* border-radius: 3px; */
+      margin-right: 3px;
+      display: inline-block;
+      position: relative;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      .icon-close{
+        color: #ccc;
+        font-size: 10px;
+        font-weight: bold;
+        display: none;
+        margin-left: 2px;
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        margin-top: -5px;
+        right: 3px;
+        left: auto;
+      }
+      cite{
+        cursor: pointer;
+        font-style: normal;
+      }
+    }
+    .list-group-item{
+      display: inline-block;
+      max-width: 120px;
+      .label.active{
+        background: rgba(0, 0, 0, .5);
+      }
+      .label:hover .icon-close,
+      .label.active .icon-close{
+        display: inline;
+      }
+    }
+  }
+  .editor-el{
+    height: 100%!important;
+    right: 0!important;
+    width: auto!important;
+    cursor: auto!important;
+    &.movedown{
+      padding-top: 24px!important;
+      margin-top: -24px;
+    }
+    .CodeMirror{
+      height: 100%;
+    }
+  }
 }
 </style>
 
