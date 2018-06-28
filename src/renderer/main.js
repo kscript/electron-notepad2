@@ -12,8 +12,19 @@ import store from './store'
 import menu from './assets/menu.js'
 import { eventBus } from './assets/eventBus'
 import file from './assets/file.js'
-import Sortable from 'vue-sortable'
-Vue.use(Sortable)
+// 方式一 (需要另外修改vue-sortable 模块源码)
+// import Sortable from 'vue-sortable'
+// Vue.use(Sortable)
+
+// 方式二
+import Sortable from 'sortablejs'
+Vue.directive('sortable', {
+  inserted: function (el, binding) {
+    // eslint-disable-next-line
+    new Sortable(el, binding.value || {})
+  }
+})
+
 Vue.use(eventBus)
 Vue.use(VueCodeMirror, {
   events: ['changes']

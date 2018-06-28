@@ -147,7 +147,7 @@ export default {
       })
     },
     onUpdate (event) {
-      this.files.splice(event.newIndex, 0, this.files.splice(event.oldIndex, 1)[0])
+      // this.files.splice(event.newIndex, 0, this.files.splice(event.oldIndex, 1)[0])
     },
     clickTab (vo) {
       this.currentPath = vo.path
