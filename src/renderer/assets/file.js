@@ -9,10 +9,12 @@ export const openDirectory = function (conf) {
   return dialog.showOpenDialog({ properties: conf || ['openFile', 'openDirectory', 'multiSelections'] })
 }
 export const openFile = function (conf) {
-  return dialog.showOpenDialog({ properties: conf || ['openFile', 'multiSelections'] })
+  return dialog.showOpenDialog(conf)
 }
-export const selectFile = function (then) {
-  var path = openFile(['openFile'])
+export const selectFile = function (conf, then) {
+  conf = conf || {}
+  conf.properties = conf.properties || ['openFile']
+  var path = openFile(conf)
   return path ? fs.readFile(path[0], 'utf8', function (err, data) {
     then && then(err, data, path[0])
   }) : then()
@@ -20,8 +22,17 @@ export const selectFile = function (then) {
 export const readFile = function (path, then) {
   return path ? fs.readFile(path, 'utf8', then) : then()
 }
-export const setFilePath = function (then) {
-  return dialog.showSaveDialog({}, then)
+export const setFilePath = function (conf, then) {
+  return dialog.showSaveDialog(conf, then)
+}
+export const saveFile = function (filename, text, then) {
+  return fs.writeFile(filename, text, then)
+}
+export const renameFile = function (oldPath, newPath, then) {
+  return fs.rename(oldPath, newPath, then)
+}
+export const mkdir = function (path, mode, then) {
+  return fs.mkdir(path, mode, then)
 }
 
 export const fileDisplay = function (filePath, deep) {
@@ -80,11 +91,13 @@ export const fileDisplay = function (filePath, deep) {
 export default {
   fs,
   dialog,
-  openFile,
   selectFile,
+  openFile,
   readFile,
+  saveFile,
+  renameFile,
   setFilePath,
+  mkdir,
   fileDisplay,
-  // saveFile,
   openDirectory
 }
