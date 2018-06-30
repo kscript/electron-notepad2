@@ -123,21 +123,38 @@ export default {
       let remote = this.$menu.remote
 
       let menu = new Menu()
-      menu.append(new MenuItem({
-        label: '重命名',
-        click () {
-          self.editInputVal = data.text
-          self.$set(data, 'input', 1)
-        }
-      }))
-      if (data.type === 'file' && data.text.slice(-3) === '.md') {
+      let finfo = this.$path.parse(data.path)
+
+      if (data.type === 'file') {
         menu.append(new MenuItem({
-          label: 'markdown文件预览',
+          label: '重命名',
           click () {
-            self.itemClick2(data).then(() => {
-              self.viewmode = 'markdown'
-              data.viewmode = 'markdown'
-            })
+            self.editInputVal = data.text
+            self.$set(data, 'input', 1)
+          }
+        }))
+        if (finfo.ext === '.md') {
+          menu.append(new MenuItem({
+            label: 'markdown文件预览',
+            click () {
+              self.itemClick2(data).then(() => {
+                self.viewmode = 'markdown'
+                data.viewmode = 'markdown'
+              })
+            }
+          }))
+        }
+      } else if (data.type === 'dir') {
+        menu.append(new MenuItem({
+          label: '新建文件',
+          click () {
+            self.$bus.$emit('newFile', data.path)
+          }
+        }))
+        menu.append(new MenuItem({
+          label: '添加文件夹',
+          click () {
+            self.$bus.$emit('newPath', data.path)
           }
         }))
       }
@@ -159,6 +176,7 @@ export default {
     closeTab (index) {
       let num
       let len = this.files.length
+      let file
       if (len === 1) {
         this.content = ''
       } else if (len > 1) {
@@ -168,16 +186,18 @@ export default {
           } else {
             num = index + 1
           }
-          this.nextPath = this.files[num].path
+          file = this.files[num]
+          this.nextPath = file.path
           clearTimeout(this.nextId)
           this.nextId = setTimeout(() => {
             this.currentPath = this.nextPath
             this.$file.readFile(this.nextPath, (err, data) => {
               if (err === null) {
                 this.content = data
+                this.viewmode = (file || {}).viewmode || 'editor'
               }
             })
-          }, 300)
+          }, 200)
         }
       }
       let node = this.pathMap[this.files[index].path]
@@ -254,19 +274,21 @@ export default {
           let newPath = this.$path.resolve(pathInfo.dir, value)
           let oldPath = file.path
           if (newPath.length) {
-            this.$file.fs.rename(oldPath, newPath, error => {
-              if (error) {
-                console.log(error)
-              } else {
-                if (this.currentPath === oldPath) {
-                  this.currentPath = newPath
+            if (file.type === 'file') {
+              this.$file.renameFile(oldPath, newPath, error => {
+                if (error) {
+                  console.log(error)
+                } else {
+                  if (this.currentPath === oldPath) {
+                    this.currentPath = newPath
+                  }
+                  file.text = value
+                  file.path = newPath
+                  this.pathMap[newPath] = file
+                  delete this.pathMap[oldPath]
                 }
-                file.text = value
-                file.path = newPath
-                this.pathMap[newPath] = file
-                delete this.pathMap[oldPath]
-              }
-            })
+              })
+            }
           }
         }
       }
@@ -276,6 +298,11 @@ export default {
     })
     this.$bus.$off('setPath').$on('setPath', path => {
       this.currentPath = path
+    })
+    this.$bus.$off('newPath').$on('newPath', path => {
+      path && this.$file.mkdir(path, () => {
+        // this.currentPath = path
+      })
     })
     this.$bus.$off('setDir').$on('setDir', () => {
       let dir
@@ -287,7 +314,7 @@ export default {
       }
     })
     this.$bus.$off('openFile').$on('openFile', () => {
-      this.$file.selectFile((err, data, path) => {
+      this.$file.selectFile({}, (err, data, path) => {
         let node
         if (err === null) {
           data && this.$bus.$emit('setFile', data)
@@ -307,10 +334,10 @@ export default {
         }
       })
     })
-    this.$bus.$off('newFile').$on('newFile', () => {
+    this.$bus.$off('newFile').$on('newFile', path => {
       let newFile = {
         icon: 'tree-file',
-        path: 'Untitled-' + this.newFileNum,
+        path: path || 'Untitled-' + this.newFileNum,
         text: 'Untitled-' + this.newFileNum++,
         type: 'file',
         newFile: 1,
@@ -330,16 +357,18 @@ export default {
         this.$bus.$emit('saveAsFile', path)
       } else {
         text = text.replace(/\n/g, '\r\n')
-        this.$file.fs.writeFile(path, text, () => {
+        this.$file.saveFile(path, text, () => {
         })
       }
     })
     this.$bus.$off('saveAsFile').$on('saveAsFile', path => {
       let text = this.content
       text = text.replace(/\n/g, '\r\n')
-      this.$file.setFilePath(filename => {
+      this.$file.setFilePath({
+        defaultPath: this.currentPath
+      }, filename => {
         if (filename) {
-          this.$file.fs.writeFile(filename, text, () => {
+          this.$file.saveFile(filename, text, () => {
             if (path) {
               let node = this.pathMap[path]
               node.path = filename

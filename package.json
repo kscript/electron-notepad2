@@ -5,7 +5,7 @@
   "author": "luren <2046@live.cn>",
   "description": "An electron-vue project",
   "license": "MIT",
-  "main": "./dist/electron/main.js",
+  "main": "main.js",
   "scripts": {
     "build": "node .electron-vue/build.js",
     "build:darwin": "cross-env BUILD_TARGET=darwin node .electron-vue/build.js",
@@ -23,7 +23,26 @@
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
     "test": "npm run unit && npm run e2e",
     "unit": "karma start test/unit/karma.conf.js",
-    "postinstall": "npm run lint:fix"
+    "postinstall2": "npm run lint:fix",
+    "postinstall": "electron-builder install-app-deps",
+    "builder:pack": "electron-builder --win --x64 --dir ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/",
+    "builder:dist": "electron-builder --win --x64 ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/"
+  },
+  "build": {
+    "appId": "com.kscript.electron-nodepad2",
+    "copyright": "kscript",
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    }
   },
   "dependencies": {
     "axios": "^0.16.1",
