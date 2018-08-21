@@ -381,7 +381,7 @@ export default {
         }
       })
     })
-    this.data = [this.$store.getters.dir]
+    this.data = this.$store.getters.dir ? [this.$store.getters.dir] : []
     this.$nextTick(() => {
       this.$menu.headMenu()
       this.init()
