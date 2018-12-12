@@ -7,19 +7,22 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'index',
-      component: require('@/components/common/Home.vue').default,
+      name: 'landing-page',
+      component: require('@/components/pages/Editor/index').default,
+      // require('@/components/LandingPage').default,
+      //   name: 'index',
+      //   component: require('@/components/common/Home').default,
       children: [
         {
           path: '/editor',
           name: 'editor',
-          component: require('@/components/pages/Editor/index.vue').default
+          component: require('@/components/pages/Editor/index').default
         }
       ]
+    },
+    {
+      path: '*',
+      redirect: '/'
     }
-    // {
-    //   path: '*',
-    //   redirect: '/'
-    // }
   ]
 })

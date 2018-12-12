@@ -18,11 +18,11 @@ html,body{
 }
 @font-face {
   font-family: "iconfont";
-  src: url('/static/fonts/iconfont.eot?t=1529395113859'); /* IE9*/
-  src: url('/static/fonts/iconfont.eot?t=1529395113859#iefix') format('embedded-opentype'), /* IE6-IE8 */
-  url('/static/fonts/iconfont.woff?t=1529395113859') format('woff'),
-  url('/static/fonts/iconfont.ttf?t=1529395113859') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
-  url('/static/fonts/iconfont.svg?t=1529395113859#iconfont') format('svg'); /* iOS 4.1- */
+  src: url('../fonts/iconfont.eot?t=1529395113859'); /* IE9*/
+  src: url('../fonts/iconfont.eot?t=1529395113859#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('../fonts/iconfont.woff?t=1529395113859') format('woff'),
+  url('../fonts/iconfont.ttf?t=1529395113859') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+  url('../fonts/iconfont.svg?t=1529395113859#iconfont') format('svg'); /* iOS 4.1- */
 }
 i,.iconfont {
   font-family: "iconfont" !important;
