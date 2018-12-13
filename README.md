@@ -1,4 +1,4 @@
-# manager
+# electron-notepad2
 
 > An electron-vue project
 

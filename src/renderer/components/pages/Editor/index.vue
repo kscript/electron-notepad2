@@ -14,7 +14,7 @@
               <i :class="_.vm.themeIconClasses" role="presentation" v-if="!_.model.loading"></i>
               <span v-html="_.model.text" v-if="!_.model.input"></span>
               <template v-else>
-                <input v-model="editInputVal" @keyup.13="editFileName(_.model)" @blur="editFileNameBlur(_.model)"/>
+                <input v-model="editInputVal" ref="renameInput" @keyup.13="editFileName(_.model)" @blur="editFileNameBlur(_.model)"/>
               </template>
             </template>
           </v-jstree>
@@ -115,6 +115,7 @@ export default {
     },
     editFileNameBlur (data) {
       this.$set(data, 'input', 0)
+      this.$bus.$emit('rename', data)
     },
     treeContextmenu (node, data, $event) {
       let self = this
@@ -131,6 +132,9 @@ export default {
           click () {
             self.editInputVal = data.text
             self.$set(data, 'input', 1)
+            self.$nextTick(() => {
+              self.$refs.renameInput && self.$refs.renameInput.focus()
+            })
           }
         }))
         if (finfo.ext === '.md') {
@@ -396,6 +400,21 @@ export default {
     .tree-container-ul{
       width: 100%;
     }
+    .tree-selected{
+      input{
+        outline: none;
+      }
+    }
+    .tree-wholerow{
+      z-index: 0!important;
+    }
+    .tree-wholerow-hovered{
+      background: #3f3f3f!important;
+    }
+    .tree-wholerow-clicked,
+    .tree-wholerow-hovered.tree-wholerow-clicked{
+      background: #505050!important;
+    }
     li{
       word-break: break-all;
       overflow: hidden;
@@ -418,7 +437,7 @@ export default {
     z-index: 20;
     color: #ccc;
     cursor: auto;
-    padding: 0px 10px;
+    // padding: 0px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, .1);
     .label{
       width: 100%;
@@ -467,6 +486,7 @@ export default {
     right: 0!important;
     width: auto!important;
     cursor: auto!important;
+    outline: none;
     &.movedown{
       padding-top: 24px!important;
       margin-top: -24px;
