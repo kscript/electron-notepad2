@@ -1,5 +1,5 @@
 <template>
-  <div class="vdr" id="vdr" :class="{ draggable: draggable && !disable, resizable: resizable && !disable, active , dragging, resizing}" @mousedown="elmDown" tabindex="0" :style="style">
+  <div class="vdr" id="vdr" ref="vdr" :class="{ draggable: draggable && !disable, resizable: resizable && !disable, active , dragging, resizing}" @click="elmClick" @mousedown="elmDown" tabindex="0" :style="style">
     <!-- 如果可改变大小为真 -->
     <template v-if="resizable && !disable">
       <!-- 待优化 -->
@@ -20,26 +20,6 @@
 export default {
   replace: true,
   name: "deformation",
-  // data() {
-  //   return {
-  //     // 是否支持passive
-  //     passiveSupported: false,
-  //     parentX: 0,
-  //     parentW: 9999,
-  //     parentY: 0,
-  //     parentH: 9999,
-  //     mouseX: 0,
-  //     mouseY: 0,
-  //     lastMouseX: 0,
-  //     lastMouseY: 0,
-  //     mouseOffX: 0,
-  //     mouseOffY: 0,
-  //     elmX: 0,
-  //     elmY: 0,
-  //     elmW: 0,
-  //     elmH: 0
-  //   }
-  // },
   props: {
     draggable: {
       // 是否可被拖动
@@ -142,6 +122,7 @@ export default {
   },
   data() {
     return {
+      init: false,
       top: this.y,
       left: this.x,
       width: this.w,
@@ -167,6 +148,12 @@ export default {
     }
   },
   methods: {
+    elmClick(e){
+      if(!this.init){
+        this.init = true;
+        this.elmDown(e);
+      }
+    },
     elmDown(e) {
       // 组件被按下事件
       // 阻止默认事件
@@ -378,6 +365,9 @@ export default {
         height: h
       }
     }
+  },
+  mounted(){
+    this.$refs.vdr.click();
   }
 }
 /* eslint-enable */
@@ -419,7 +409,7 @@ svg {
   cursor: w-resize;
   position: absolute;
   height: 100%;
-  width: 8px;
+  width: 20px;
   z-index: 10;
 }
 .handle-ml:hover {
@@ -431,7 +421,7 @@ svg {
   cursor: w-resize;
   position: absolute;
   height: 100%;
-  width: 8px;
+  width: 20px;
   z-index: 10;
 }
 .handle-mr:hover {
@@ -440,7 +430,7 @@ svg {
 .handle-tm {
   position: absolute;
   width: 100%;
-  height: 8px;
+  height: 20px;
   top: 0;
   left: 0;
   z-index: 10;
@@ -452,7 +442,7 @@ svg {
 .handle-bm {
   position: absolute;
   width: 100%;
-  height: 8px;
+  height: 20px;
   bottom: 0;
   left: 0;
   z-index: 10;

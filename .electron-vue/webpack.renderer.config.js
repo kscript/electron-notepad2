@@ -8,8 +8,9 @@ const webpack = require('webpack')
 
 const BabiliWebpackPlugin = require('babili-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { VueLoaderPlugin } = require('vue-loader')
 
 /**
  * List of node_modules to include in webpack bundle
@@ -19,13 +20,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/webpack-configurations.html#white-listing-externals
  */
 let whiteListedModules = ['vue']
+
 let rendererConfig = {
   devtool: '#cheap-module-eval-source-map',
   entry: {
     renderer: path.join(__dirname, '../src/renderer/main.js')
   },
   externals: [
-    ...Object.keys(dependencies || {}).filter(d => !whiteListedModules.includes(d))
+    // ...Object.keys(dependencies || {}).filter(d => !whiteListedModules.includes(d))
   ],
   module: {
     rules: [
@@ -41,6 +43,22 @@ let rendererConfig = {
         }
       },
       {
+        test: /\.scss$/,
+        use: ['vue-style-loader', 'css-loader', 'sass-loader']
+      },
+      {
+        test: /\.sass$/,
+        use: ['vue-style-loader', 'css-loader', 'sass-loader?indentedSyntax']
+      },
+      {
+        test: /\.less$/,
+        use: ['vue-style-loader', 'css-loader', 'less-loader']
+      },
+      {
+        test: /\.css$/,
+        use: ['vue-style-loader', 'css-loader']
+      },
+      {
         test: /\.html$/,
         use: 'vue-html-loader'
       },
@@ -54,55 +72,15 @@ let rendererConfig = {
         use: 'node-loader'
       },
       {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: 'css-loader'
-        })
-      },
-      {
         test: /\.vue$/,
         use: {
           loader: 'vue-loader',
           options: {
             extractCSS: process.env.NODE_ENV === 'production',
-            // loaders: {
-            //   sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax=1',
-            //   scss: 'vue-style-loader!css-loader!sass-loader'
-            // }
             loaders: {
-              sass: [
-                'vue-style-loader',
-                'css-loader',
-
-                // postcss-loader非必须
-                // 'postcss-loader',
-                'sass-loader?indentedSyntax=1',
-                {
-                  loader: 'sass-resources-loader',
-                  options: {
-
-                    // 需更改为项目中实际scss文件路径
-                    resources: path.resolve(__dirname, '../static/scss/common.scss'),
-                  },
-                },
-              ],
-              scss: [
-                'vue-style-loader',
-                'css-loader',
-
-                // postcss-loader非必须
-                // 'postcss-loader',
-                'sass-loader',
-                {
-                  loader: 'sass-resources-loader',
-                  options: {
-
-                    // 需更改为项目中实际scss文件路径
-                    resources: path.resolve(__dirname, '../static/scss/common.scss'),
-                  },
-                },
-              ],
+              sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax=1',
+              scss: 'vue-style-loader!css-loader!sass-loader',
+              less: 'vue-style-loader!css-loader!less-loader'
             }
           }
         }
@@ -142,7 +120,8 @@ let rendererConfig = {
     __filename: process.env.NODE_ENV !== 'production'
   },
   plugins: [
-    new ExtractTextPlugin('styles.css'),
+    new VueLoaderPlugin(),
+    new MiniCssExtractPlugin({filename: 'styles.css'}),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: path.resolve(__dirname, '../src/index.ejs'),
