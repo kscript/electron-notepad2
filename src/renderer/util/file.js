@@ -70,7 +70,7 @@ export const fileDisplay = function (filePath, deep) {
             // 扩展名
             ext: ext,
             // 显示图标
-            icon: (ext ? 'tree-type-' + ext + ' ' : '') + 'tree-file',
+            icon: (ext ? 'tree-type tree-type-' + ext + ' ' : '') + 'tree-file',
             // 文件信息
             stats: {
               size: stats.size
