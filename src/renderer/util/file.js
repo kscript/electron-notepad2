@@ -47,10 +47,11 @@ export const fileDisplay = function (filePath, deep) {
   }
   var dir = filePath
   // 根据文件路径读取文件，返回文件列表
-  var files = fs.readdirSync(filePath)
-  var list = []
+  var filelists = fs.readdirSync(filePath)
+  var dirs = []
+  var files = []
   // 遍历读取到的文件列表
-  files.forEach(function (filename) {
+  filelists.forEach(function (filename) {
     // dir += '/' + filename
     var current = Path.join(dir, filename)
     if (filename !== '/' || filename !== '\\') {
@@ -60,23 +61,42 @@ export const fileDisplay = function (filePath, deep) {
         var isDir = stats.isDirectory() // 是文件夹
         var res
         if (isFile) {
-          list.push({
+          var extIndex = filename.lastIndexOf('.')
+          var ext = extIndex < 0 ? '' : filename.slice(extIndex + 1)
+          files.push({
             type: 'file',
-            icon: 'tree-file',
-            text: filename,
             path: current,
-            opened: false
+            text: filename,
+            // 扩展名
+            ext: ext,
+            // 显示图标
+            icon: (ext ? 'tree-type-' + ext + ' ' : '') + 'tree-file',
+            // 文件信息
+            stats: {
+              size: stats.size
+            },
+            // 是否加入到文件tab
+            pushed: 0,
+            // vue-jstree中的属性
+            opened: 0,
+            selected: 0
           })
         }
         if (isDir) {
           if (ignore.indexOf(filename) < 0) {
             res = deep ? fileDisplay(current, true) : []
-            list.push({
+            dirs.push({
               type: 'dir',
-              text: filename,
-              opened: false,
               path: current,
-              children: res.children || res
+              text: filename,
+              ext: '',
+              stats: {
+                size: stats.size
+              },
+              children: res.children || res,
+              pushed: 0,
+              opened: 0,
+              selected: 0
             })
           }
         }
@@ -85,7 +105,7 @@ export const fileDisplay = function (filePath, deep) {
       }
     }
   })
-  tree.children = list
+  tree.children = dirs.concat(files)
   return tree
 }
 export default {
