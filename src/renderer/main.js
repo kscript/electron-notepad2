@@ -3,15 +3,17 @@ import axios from 'axios'
 import path from 'path'
 import VueCodeMirror from 'vue-codemirror-lite'
 import VJstree from 'vue-jstree'
+import elementUi from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
 // import Sortable from 'sortablejs'
 
 import App from './App'
 import router from './router'
 import store from './store'
 
-import menu from './assets/menu.js'
-import { eventBus } from './assets/eventBus'
-import file from './assets/file.js'
+import menu from './util/menu.js'
+import { eventBus } from './eventBus'
+import file from './util/file.js'
 // 方式一 (需要另外修改vue-sortable 模块源码)
 // import Sortable from 'vue-sortable'
 // Vue.use(Sortable)
@@ -25,6 +27,7 @@ Vue.directive('sortable', {
   }
 })
 
+Vue.use(elementUi)
 Vue.use(eventBus)
 Vue.use(VueCodeMirror, {
   events: ['changes']

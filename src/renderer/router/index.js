@@ -7,22 +7,21 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'landing-page',
-      component: require('@/components/pages/Editor/index').default,
-      // require('@/components/LandingPage').default,
-      //   name: 'index',
-      //   component: require('@/components/common/Home').default,
+      name: 'home',
+      component: require('@/components/common/home').default,
+      redirect: 'Editor',
       children: [
         {
-          path: '/editor',
-          name: 'editor',
+          name: 'Editor',
+          path: '/Editor',
           component: require('@/components/pages/Editor/index').default
+        },
+        {
+          name: 'Settings',
+          path: '/Settings',
+          component: require('@/components/pages/Settings/index').default
         }
       ]
-    },
-    {
-      path: '*',
-      redirect: '/'
     }
   ]
 })
