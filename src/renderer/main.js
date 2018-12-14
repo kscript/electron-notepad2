@@ -12,20 +12,8 @@ import router from './router'
 import store from './store'
 
 import menu from './util/menu.js'
-import { eventBus } from './eventBus'
 import file from './util/file.js'
-// 方式一 (需要另外修改vue-sortable 模块源码)
-// import Sortable from 'vue-sortable'
-// Vue.use(Sortable)
-
-// 方式二
-import Sortable from 'sortablejs'
-Vue.directive('sortable', {
-  inserted: function (el, binding) {
-    // eslint-disable-next-line
-    new Sortable(el, binding.value || {})
-  }
-})
+import { eventBus } from './eventBus'
 
 Vue.use(elementUi)
 Vue.use(eventBus)
