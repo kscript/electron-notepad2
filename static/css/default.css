@@ -6,6 +6,9 @@
 html,body{
   height: 100%;
 }
+ul, dl, ol{
+  list-style: none;
+}
 #app{
   color: #fff;
   background-color: #333;
@@ -125,4 +128,7 @@ i,.iconfont {
 }
 .el-message-box__wrapper .el-message-box{
   width: 360px;
+}
+.el-message-box__wrapper .el-message-box .el-message-box__message{
+  word-break: break-all;
 }

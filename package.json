@@ -1,10 +1,10 @@
 {
   "name": "notepad2",
   "productName": "notepad2",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "author": "kscript <1258@live.cn>",
   "description": "An electron-vue project",
-  "license": "MIT",
+  "license": "Apache",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",

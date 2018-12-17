@@ -6,6 +6,7 @@ import elementUi from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import VueCodeMirror from 'vue-codemirror-lite'
 import tool from './util'
+import config from './config'
 
 import App from './App'
 import store from './store'
@@ -24,6 +25,7 @@ if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 if (window) window.ELECTRON_DISABLE_SECURITY_WARNINGS = true
 
 // let { db, file, menu, copy, eventBus } = tool
+Vue.prototype.$config = config
 Vue.prototype.tool = {
   path,
   electron,
