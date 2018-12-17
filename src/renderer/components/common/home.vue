@@ -19,35 +19,70 @@
 export default {
   data () {
     return {
-      shouldUpdate: true,
+      shouldUpdate: false,
       downloadPercent: 10,
       tips: ''
     }
   },
-  methods: {
-    checkUpdateVersion () {
-      this.tool.electron.ipcRenderer.send('checkForUpdate')
-      this.tool.electron.ipcRenderer.on('message', (event, text) => {
-        this.tips = typeof text === 'string' ? text : ''
-      })
-      this.tool.electron.ipcRenderer.on('downloadProgress', (event, progressObj) => {
-        console.log('ipcRenderer', progressObj)
-        this.downloadPercent = progressObj.percent || 0
-      })
-      this.tool.electron.ipcRenderer.on('isUpdateNow', () => {
-        this.tool.electron.ipcRenderer.send('isUpdateNow')
-      })
-    }
-  },
   created () {
+    let system = this.$config.system
     if (window) {
       window.app = this
     }
-    // this.checkUpdateVersion()
+    // 关于
+    this.$bus.$off('about').$on('about', () => {
+      this.$msgbox({
+        type: 'none',
+        title: '关于',
+        customClass: 'msgbox-about',
+        dangerouslyUseHTMLString: true,
+        message: `<ul class="about-detail">
+          <li>版本: ${system.version}</li>
+          <li>名称: ${system.name}</li>
+          <li>作者: ${system.author}</li>
+          <li>许可证: ${system.license}</li>
+          <li>更新时间: ${system.time}</li>
+          <li>Electron:  ${system.electron}</li>
+        </ul>`
+      }).then(() => {
+      }).catch(() => {
+      })
+    })
+    // 自动检查
+    this.tool.update((event, state, text) => {
+      // 后期发提醒
+    }, () => {
+    })
+    // 手动检查
+    this.$bus.$off('checkVersion').$on('checkVersion', () => {
+      this.tool.update((event, state, text) => {
+        this.tips = typeof text === 'string' ? text : ''
+        if (state === 'updateNotAva') {
+          this.downloadPercent = 100
+          this.shouldUpdate = false
+          this.$msgbox({
+            type: 'success',
+            title: '检测完成!',
+            message: text
+          })
+            .then(() => {})
+            .catch(() => {})
+        } else if (state === 'updateAva') {
+          this.shouldUpdate = true
+        }
+      }, (event, progressObj) => {
+        this.downloadPercent = progressObj.percent || 0
+      })
+    })
   }
 }
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
+.msgbox-about{
+  .about-detail{
+    padding: 0 10px 0 20px;
+  }
+}
 .tips-box{
   padding: 50px;
   text-align: center;

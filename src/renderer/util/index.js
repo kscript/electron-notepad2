@@ -1,6 +1,7 @@
 import db from './sql'
 import file from './file'
 import menu from './menu'
+import update from './update'
 import { eventBus } from './eventBus'
 
 export const copy = function (data) {
@@ -17,5 +18,6 @@ export default {
   file,
   menu,
   copy,
+  update,
   eventBus
 }

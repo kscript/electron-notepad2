@@ -1,6 +1,6 @@
 // import Vue from 'Vue'
 // import store from '../store'
-import { remote } from 'electron'
+import { remote, shell } from 'electron'
 import { Bus } from './eventBus'
 // import file from './file.js'
 let { Menu, MenuItem } = remote
@@ -79,9 +79,23 @@ export const headMenu = function () {
       label: '帮助',
       submenu: [
         {
-          // label: 'Learn More',
-          label: '学习更多..',
-          click () { require('electron').shell.openExternal('https://electronjs.org') }
+          label: 'Electron文档',
+          click () {
+            shell.openExternal('https://electronjs.org')
+          }
+        },
+        { type: 'separator' },
+        {
+          label: '关于',
+          click () {
+            Bus.$emit('about')
+          }
+        },
+        {
+          label: '检查更新',
+          click () {
+            Bus.$emit('checkVersion')
+          }
         }
       ]
     }
