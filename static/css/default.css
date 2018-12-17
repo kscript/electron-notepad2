@@ -123,3 +123,6 @@ i,.iconfont {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.el-message-box__wrapper .el-message-box{
+  width: 360px;
+}

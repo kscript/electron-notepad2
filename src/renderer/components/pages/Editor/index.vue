@@ -51,7 +51,7 @@
               <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
             </template>
             <template v-else-if="viewmode === 'markdown'">
-              <v-vuemarkdown class="md-editor-preview markdown-body f100 scroll" style="background: #fff;padding: 10px 20px;">{{content}}</v-vuemarkdown>
+              <v-vuemarkdown ref="markdown" class="md-editor-preview markdown-body f100 scroll" @rendered="rendered">{{content}}</v-vuemarkdown>
             </template>
           </v-deformation>
         </div>
@@ -105,6 +105,32 @@ export default {
     'v-deformation': deformation
   },
   methods: {
+    rendered () {
+      this.$nextTick(() => {
+        this.$refs.markdown && this.$refs.markdown.$el.addEventListener('click', (e) => {
+          if (e.target.tagName.toLowerCase() === 'a') {
+            let url = e.target.getAttribute('href')
+            if (url && /^http(s|):\/\//.test(url)) {
+              this.$msgbox({
+                type: 'warning',
+                title: '提示',
+                width: 300,
+                message: '是否使用外部浏览器打开当前链接?',
+                center: true,
+                showCancelButton: true,
+                cancelButtonText: '取消',
+                confirmButtonText: '打开'
+              }).then(() => {
+                this.tool.electron.shell.openExternal(url)
+              }).catch(() => {
+              })
+            }
+          }
+          e.preventDefault()
+          return false
+        }, true)
+      })
+    },
     openBigFile () {
       this.$msgbox({
         type: 'warning',
@@ -147,7 +173,7 @@ export default {
           clearTimeout(this.nextId)
           this.nextId = setTimeout(() => {
             this.currentPath = this.nextPath
-            this.$file.readFile(this.nextPath, (err, data) => {
+            this.tool.file.readFile(this.nextPath, (err, data) => {
               if (err === null) {
                 this.content = data
                 this.viewmode = (file || {}).viewmode || 'editor'
@@ -174,8 +200,7 @@ export default {
     },
     openFile (node, mode) {
       node.opened = !node.opened
-      this.viewmode = mode || 'editor'
-      return new Promise(resolve => {
+      return new Promise((resolve, reject) => {
         let res
         if (node.type === 'file') {
           if (node.stats && node.stats.size > 1024 * 1024 * 3) {
@@ -183,7 +208,7 @@ export default {
               return m.toUpperCase()
             })
             resolve(res)
-          } else if (node.opened) {
+          } else {
             if (!node.pushed) {
               this.pathMap[node.path] = node
               this.$set(node, 'pushed', 1)
@@ -191,45 +216,48 @@ export default {
             }
             this.currentPath = node.path
             // this.$store.commit('SET_CURRENT', this.currentPath)
-            this.$file.readFile(node.path, (err, data) => {
+            this.tool.file.readFile(node.path, (err, data) => {
               if (err === null) {
                 // this.$store.commit('SET_FILE', data)
                 this.content = data
                 node.opened = node.opened ? 0 : 1
                 resolve(res)
+              } else {
+                console.log(err)
+                reject(err)
               }
             })
-          } else {
-            resolve(res)
           }
         } else {
           if (node.opened) {
             this.$set(node, 'loading', true)
-            let dir = this.$file.fileDisplay(node.path)
+            let dir = this.tool.file.fileDisplay(node.path)
             this.$set(node, 'loading', false)
             this.$set(node, 'children', dir.children || dir)
           }
           resolve(res)
         }
+      }).then(() => {
+        this.viewmode = mode || 'editor'
       })
     }
   },
   created () {
     this.$bus.$off('newPath').$on('newPath', path => {
-      path && this.$file.mkdir(path, () => {
+      path && this.tool.file.mkdir(path, () => {
       })
     })
     this.$bus.$off('setDir').$on('setDir', () => {
       let dir
-      let path = this.$file.openDirectory(['openDirectory'])
+      let path = this.tool.file.openDirectory(['openDirectory'])
       if (path && path[0]) {
-        dir = this.$file.fileDisplay(path[0])
-        this.$store.commit('SET_DIR', this.$copy(dir))
+        dir = this.tool.file.fileDisplay(path[0])
+        this.$store.commit('SET_DIR', this.tool.copy(dir))
         this.treeData = [dir]
       }
     })
     this.$bus.$off('openFile').$on('openFile', () => {
-      this.$file.selectFile({}, (err, data, path) => {
+      this.tool.file.selectFile({}, (err, data, path) => {
         let node
         if (err === null) {
           if (data) {
@@ -276,18 +304,18 @@ export default {
         this.$bus.$emit('saveAsFile', path)
       } else {
         text = text.replace(/\n/g, '\r\n')
-        this.$file.saveFile(path, text, () => {
+        this.tool.file.saveFile(path, text, () => {
         })
       }
     })
     this.$bus.$off('saveAsFile').$on('saveAsFile', path => {
       let text = this.content
       text = text.replace(/\n/g, '\r\n')
-      this.$file.setFilePath({
+      this.tool.file.setFilePath({
         defaultPath: this.currentPath
       }, filename => {
         if (filename) {
-          this.$file.saveFile(filename, text, () => {
+          this.tool.file.saveFile(filename, text, () => {
             if (path) {
               let node = this.pathMap[path]
               node.path = filename
@@ -302,10 +330,7 @@ export default {
     })
   },
   mounted () {
-    if (window) {
-      window.editor = this
-    }
-    this.$menu.headMenu()
+    this.tool.menu.headMenu()
     this.treeData = this.$store.getters.dir ? [this.$store.getters.dir] : []
   }
 }
@@ -387,6 +412,10 @@ export default {
       line-height: 20px;
       padding: 10px 0;
     }
+  }
+  .markdown-body{
+    background: #fff;
+    padding: 10px 20px;
   }
 }
 </style>
