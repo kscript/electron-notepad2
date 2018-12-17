@@ -1,7 +1,7 @@
 // import Vue from 'Vue'
 // import store from '../store'
 import { remote } from 'electron'
-import { Bus } from '../eventBus'
+import { Bus } from './eventBus'
 // import file from './file.js'
 let { Menu, MenuItem } = remote
 

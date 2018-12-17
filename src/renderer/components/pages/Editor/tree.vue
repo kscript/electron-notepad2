@@ -66,12 +66,12 @@ export default {
       this.$refs.renameInput && this.$refs.renameInput.focus()
     },
     treeContextmenu (node, data, $event) {
-      let Menu = this.$menu.Menu
-      let MenuItem = this.$menu.MenuItem
-      let remote = this.$menu.remote
+      let Menu = this.tool.menu.Menu
+      let MenuItem = this.tool.menu.MenuItem
+      let remote = this.tool.menu.remote
 
       let menu = new Menu()
-      let finfo = this.$path.parse(data.path)
+      let finfo = this.tool.path.parse(data.path)
       // this.$store.getters
       menu.append(new MenuItem({
         label: '重命名',
@@ -113,12 +113,12 @@ export default {
       if (file && file.path && file.text) {
         let value = file.text
         if (!/(\?|\*|\||<|>|"|\/|:|\\)/.test(value)) {
-          let pathInfo = this.$path.parse(file.path)
-          let newPath = this.$path.resolve(pathInfo.dir, value)
+          let pathInfo = this.tool.path.parse(file.path)
+          let newPath = this.tool.path.resolve(pathInfo.dir, value)
           let oldPath = file.path
           if (newPath.length) {
             if (file.type === 'file') {
-              this.$file.renameFile(oldPath, newPath, error => {
+              this.tool.file.renameFile(oldPath, newPath, error => {
                 if (error) {
                   console.log(error)
                 } else {
