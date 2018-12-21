@@ -108,6 +108,9 @@ export const fileDisplay = function (filePath, deep) {
   tree.children = dirs.concat(files)
   return tree
 }
+export const getStats = function (path) {
+  return fs.fstatSync(fs.openSync(path, 'r'))
+}
 export default {
   fs,
   dialog,
@@ -118,6 +121,7 @@ export default {
   renameFile,
   setFilePath,
   mkdir,
+  getStats,
   fileDisplay,
   openDirectory
 }

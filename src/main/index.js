@@ -48,8 +48,8 @@ function updateHandle () {
   })
 }
 // 通过main进程发送事件给renderer进程，提示更新信息
-function sendUpdateMessage (state, text) {
-  mainWindow.webContents.send('message', state, text)
+function sendUpdateMessage (state, text, error) {
+  mainWindow.webContents.send('message', state, text, error)
 }
 /**
  * Set `__static` path to static files in production

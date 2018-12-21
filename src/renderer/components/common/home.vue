@@ -55,7 +55,7 @@ export default {
     })
     // 手动检查
     this.$bus.$off('checkVersion').$on('checkVersion', () => {
-      this.tool.update((event, state, text) => {
+      this.tool.update((event, state, text, error) => {
         this.tips = typeof text === 'string' ? text : ''
         if (state === 'updateNotAva') {
           this.downloadPercent = 100
@@ -69,6 +69,8 @@ export default {
             .catch(() => {})
         } else if (state === 'updateAva') {
           this.shouldUpdate = true
+        } else if (state === 'error') {
+          console.log(event, state, text, error)
         }
       }, (event, progressObj) => {
         this.downloadPercent = progressObj.percent || 0
