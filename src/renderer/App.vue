@@ -12,4 +12,7 @@
 
 <style>
   /* CSS */
+  #app{
+    min-width: 600px;
+  }
 </style>

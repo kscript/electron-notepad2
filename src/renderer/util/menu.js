@@ -75,6 +75,17 @@ export const headMenu = function () {
       ]
     },
     {
+      label: '工具',
+      submenu: [
+        {
+          label: 'css 图片精灵',
+          click () {
+            Bus.$emit('CssSprite')
+          }
+        }
+      ]
+    },
+    {
       role: 'help',
       label: '帮助',
       submenu: [
