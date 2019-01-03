@@ -8,8 +8,8 @@ const ignore = 'node_modules,.git'.split(',')
 export const openDirectory = function (conf) {
   return dialog.showOpenDialog({ properties: conf || ['openFile', 'openDirectory', 'multiSelections'] })
 }
-export const openFile = function (conf) {
-  return dialog.showOpenDialog(conf)
+export const openFile = function (conf, cb) {
+  return dialog.showOpenDialog(conf, cb)
 }
 export const selectFile = function (conf, then) {
   conf = conf || {}

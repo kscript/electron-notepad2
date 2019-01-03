@@ -76,6 +76,11 @@ export default {
         this.downloadPercent = progressObj.percent || 0
       })
     })
+    this.$bus.$off('CssSprite').$on('CssSprite', () => {
+      this.$router.push({
+        path: '/CssSprite'
+      })
+    })
   }
 }
 </script>

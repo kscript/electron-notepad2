@@ -21,7 +21,9 @@
     "renderer": {
       "presets": [
         ["env", {
-          "modules": false
+          "loose": false, 
+          "modules": false,
+          "useBuiltIns": true
         }],
         "stage-0"
       ]
@@ -29,7 +31,9 @@
     "web": {
       "presets": [
         ["env", {
-          "modules": false
+          "loose": false, 
+          "modules": false,
+          "useBuiltIns": true
         }],
         "stage-0"
       ]

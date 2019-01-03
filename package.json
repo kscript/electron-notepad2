@@ -65,7 +65,6 @@
     "codemirror": "^5.38.0",
     "el-tree-select": "^2.0.3",
     "nano-sql": "^1.7.91",
-    "sprity": "^1.0.8",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
     "vue-jstree": "^2.1.6",

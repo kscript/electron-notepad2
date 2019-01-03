@@ -20,6 +20,11 @@ export default new Router({
           name: 'Settings',
           path: '/Settings',
           component: require('@/components/pages/Settings/index').default
+        },
+        {
+          name: 'CssSprite',
+          path: '/CssSprite',
+          component: require('@/components/pages/CssSprite/index').default
         }
       ]
     }
