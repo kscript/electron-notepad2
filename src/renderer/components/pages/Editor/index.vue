@@ -87,12 +87,14 @@ export default {
       draggableOptions: {
         group: 'label'
       },
+      storeTree: {},
       treeEvents: {},
       newFileNum: 1,
       files: [],
       pathMap: {},
       nextFile: '',
       currentPath: '',
+      current: {},
       nextId: 0,
       data: [],
       treeData: []
@@ -105,26 +107,58 @@ export default {
     'v-deformation': deformation
   },
   methods: {
+    // 打开markdown里的链接时, 会离开编辑器环境, 拦截一下
     rendered () {
       this.$nextTick(() => {
         this.$refs.markdown && this.$refs.markdown.$el.addEventListener('click', (e) => {
+          let node
           if (e.target.tagName.toLowerCase() === 'a') {
             let url = e.target.getAttribute('href')
-            if (url && /^http(s|):\/\//.test(url)) {
-              this.$msgbox({
-                type: 'warning',
-                title: '提示',
-                width: 300,
-                message: '是否使用外部浏览器打开当前链接?',
-                center: true,
-                showCancelButton: true,
-                cancelButtonText: '取消',
-                confirmButtonText: '打开'
-              }).then(() => {
-                this.tool.electron.shell.openExternal(url)
-              }).catch(() => {
-              })
+            if (url) {
+              if (/^http(s|):\/\//.test(url)) {
+                this.$msgbox({
+                  type: 'warning',
+                  title: '提示',
+                  width: 300,
+                  message: '是否使用外部浏览器打开当前链接?',
+                  center: true,
+                  showCancelButton: true,
+                  cancelButtonText: '取消',
+                  confirmButtonText: '打开'
+                }).then(() => {
+                  this.tool.electron.shell.openExternal(url)
+                }).catch(() => {
+                })
+              } else {
+                let path
+                let info
+                if (/(\.|\/)/.test(url)) {
+                  path = this.tool.path.resolve(this.current.dir, url)
+                } else if (url.slice(0, 6) === 'file://') {
+                  path = url
+                }
+                if (path) {
+                  info = this.tool.path.parse(path)
+                  node = {
+                    ext: info.ext.slice(1),
+                    icon: (info.ext.length > 1 ? 'tree-type tree-type-' + info.ext.slice(1) + ' ' : '') + 'tree-file',
+                    path: path,
+                    text: path,
+                    type: 'file',
+                    pushed: 0,
+                    opened: 0,
+                    selected: 0,
+                    viewmode: this.viewmode
+                  }
+                  this.$set(this.storeTree, path, node)
+                }
+              }
             }
+          }
+          if (node) {
+            this.pathMap[node.path] = node
+            this.clickTab(node)
+            // this.openFile(node, this.viewmode)
           }
           e.preventDefault()
           return false
@@ -199,11 +233,19 @@ export default {
       }
     },
     openFile (node, mode) {
+      // console.log(node, mode)
       node.opened = !node.opened
       return new Promise((resolve, reject) => {
         let res
+        let stats
         if (node.type === 'file') {
-          if (node.stats && node.stats.size > 1024 * 1024 * 3) {
+          if (!node.stats) {
+            stats = this.tool.file.getStats(node.path)
+            this.$set(node, 'stats', {
+              size: stats.size
+            })
+          }
+          if (node.stats.size > 1024 * 1024 * 3) {
             this.viewmode = 'big' + this.viewmode.replace(/./, m => {
               return m.toUpperCase()
             })
@@ -215,11 +257,13 @@ export default {
               this.files.push(node)
             }
             this.currentPath = node.path
+            this.current = this.tool.path.parse(node.path)
             // this.$store.commit('SET_CURRENT', this.currentPath)
             this.tool.file.readFile(node.path, (err, data) => {
               if (err === null) {
                 // this.$store.commit('SET_FILE', data)
                 this.content = data
+                console.log(data)
                 node.opened = node.opened ? 0 : 1
                 resolve(res)
               } else {
@@ -340,8 +384,7 @@ export default {
   .name-list{
     height: 24px;
     width: 100%;
-    background-color: #282828;
-    /* display: none; */
+    background-color: #888;
     position: relative;
     z-index: 20;
     color: #ccc;
