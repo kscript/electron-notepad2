@@ -1,68 +1,98 @@
 <template>
   <div class="css-sprite">
-    <div class="hd">
-      <el-form :inline="true">
-        <el-form-item>
-          <el-button @click="selectFile" size="mini">选择文件</el-button>
-        </el-form-item>
-        <el-form-item label="宽度">
-          <el-input v-model="width" size="mini" style="width: 60px;"></el-input>
-        </el-form-item>
-        <el-form-item label="间距">
-          <el-input v-model="padding" size="mini" style="width: 60px;"></el-input>
-        </el-form-item>
-        <el-form-item label="每排个数">
-          <el-input v-model="num" size="mini" style="width: 60px;"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button @click="build" size="mini">生成</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button @click="clear" size="mini">清空</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button @click="save" size="mini">保存</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
     <div class="bd">
-      <el-row type="flex">
-        <el-col :span="8">
-          <div class="table-box scoll">
-            <el-table :data="files" size="mini" style="width: 100%;" height="400">
-              <el-table-column prop="path" label="图片">
-                <template slot-scope="scope">
-                  <img :src="scope.row.data" alt="scope.name">
-                </template>
-              </el-table-column>
-              <el-table-column prop="name" label="文件名">
-              </el-table-column>
-              <el-table-column label="操作" width="80">
-                <template slot-scope="scope">
-                  <span class="handler-icon">
-                    <i class="el-icon-arrow-up" @click="fileHandler('up', scope)"></i>
-                    <i class="el-icon-arrow-down" @click="fileHandler('down',scope)"></i>
-                    <i class="el-icon-close" @click="fileHandler('close',scope)"></i>
-                  </span>
-                </template>
-              </el-table-column>
-            </el-table>
+      <el-collapse v-model="activeNames">
+        <el-collapse-item title="设置区" name="setting">
+          <el-form :inline="true">
+            <el-form-item>
+              <el-button @click="selectFile" size="mini">选择文件</el-button>
+            </el-form-item>
+            <el-form-item label="宽度">
+              <el-input v-model.number="width" size="mini" style="width: 60px;"></el-input>
+            </el-form-item>
+            <el-form-item label="高度">
+              <el-input v-model.number="height" size="mini" style="width: 60px;"></el-input>
+            </el-form-item>
+            <el-form-item label="间距">
+              <el-input v-model="padding" size="mini" style="width: 60px;"></el-input>
+            </el-form-item>
+            <el-form-item label="每排个数">
+              <el-input v-model="num" size="mini" style="width: 60px;"></el-input>
+            </el-form-item>
+          </el-form>
+          <el-form :inline="true">
+            <el-form-item>
+              <el-button @click="buildBefore" size="mini">生成</el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click="clear" size="mini">清空</el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click="save" size="mini">保存</el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click="preview" size="mini">预览</el-button>
+            </el-form-item>
+          </el-form>
+        </el-collapse-item>
+        <el-collapse-item title="操作区" name="handler">
+          <el-row type="flex">
+            <el-col :span="8">
+              <div class="table-box scoll">
+                <el-table border :data="files" size="mini" style="width: 100%;" :height="cxtHeight < 300 ? 300 : cxtHeight">
+                  <el-table-column prop="path" label="图片">
+                    <template slot-scope="scope">
+                      <img :src="scope.row.data" alt="scope.name">
+                    </template>
+                  </el-table-column>
+                  <!-- <el-table-column prop="name" label="文件名">
+                  </el-table-column> -->
+                  <el-table-column label="操作" width="80">
+                    <template slot-scope="scope">
+                      <span class="handler-icon">
+                        <i class="el-icon-arrow-up" @click="fileHandler('up', scope)"></i>
+                        <i class="el-icon-arrow-down" @click="fileHandler('down',scope)"></i>
+                        <i class="el-icon-close" @click="fileHandler('close',scope)"></i>
+                      </span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-col>
+            <el-col :span="16">
+              <div class="canvas-box">
+                <canvas
+                ref="canvas"
+                :width="cxtWidth +'px'"
+                :height="cxtHeight + 'px'"
+                @mousedown="onmousedown"
+                @mousemove="onmousemove"
+                @mouseup="onmouseup"
+                >
+                </canvas>
+              </div>
+            </el-col>
+          </el-row>
+        </el-collapse-item>
+        <el-collapse-item title="生成css" name="style">
+          <div class="style-box">
+            <textarea v-model="style"></textarea>
           </div>
-        </el-col>
-        <el-col :span="16">
-          <div class="canvas-box">
-            <canvas
-             ref="canvas"
-             :width="cxtWidth +'px'"
-             :height="cxtHeight + 'px'"
-             @mousedown="onmousedown"
-             @mousemove="onmousemove"
-             @mouseup="onmouseup"
-            >
-            </canvas>
+        </el-collapse-item>
+        <el-collapse-item title="生成预览" name="preview">
+          <div class="preview" ref="preview" v-if="isPreview" :style="'width: ' + cxtWidth + 'px; height: ' + (cxtHeight + height) + 'px'">
+            <div class="bg">
+              <div
+                class="cp-icons"
+                v-for="(vo, index) in files"
+                :class="'cp-icon-' + index"
+                :style="'width: ' + width + 'px; height: ' + height + 'px;'"
+                :key="index">
+              </div>
+            </div>
           </div>
-        </el-col>
-      </el-row>
+        </el-collapse-item>
+      </el-collapse>
     </div>
   </div>
 </template>
@@ -70,17 +100,28 @@
 export default {
   data () {
     return {
+      activeNames: ['setting', 'handler'],
+      style: '',
+      styleEl: null,
+      blobUrl: '',
+      isPreview: false,
       width: 32,
+      height: 32,
       padding: 1,
+      // 每排图片个数
       num: 15,
       cxt: null,
-      imgBuffer: null,
-      selecteIndex: 0,
-      offsetX: 0,
-      offsetY: 0,
+      files: [],
+      // 是否处于拖动状态
       drag: false,
       isSave: false,
-      files: []
+      // 相对于用户拖动的图片的偏移量
+      offsetX: 0,
+      offsetY: 0,
+      // 用户拖动的图片的索引
+      selecteIndex: 0,
+      // 缓存生成的图片
+      imgBuffer: null
     }
   },
   computed: {
@@ -88,19 +129,19 @@ export default {
       return (this.width + this.padding * 2) * this.num
     },
     cxtHeight () {
-      return (this.width + this.padding * 2) * Math.ceil(this.files.length / this.num)
+      return (this.height + this.padding * 2) * Math.ceil(this.files.length / this.num)
     }
   },
   methods: {
     getIndex ($event) {
       let x = ~~($event.offsetX / (this.width + this.padding * 2))
-      let y = ~~($event.offsetY / (this.width + this.padding * 2))
+      let y = ~~($event.offsetY / (this.height + this.padding * 2))
       return x + this.num * y
     },
     onmousedown ($event) {
       this.drag = true
-      this.offsetX = $event.offsetX % (this.num + this.padding * 2)
-      this.offsetY = $event.offsetY % (this.num + this.padding * 2)
+      this.offsetX = $event.offsetX % (this.width + this.padding * 2)
+      this.offsetY = $event.offsetY % (this.height + this.padding * 2)
       this.selecteIndex = this.getIndex($event)
     },
     onmousemove ($event) {
@@ -121,6 +162,7 @@ export default {
           this.exchange(this.files, this.selecteIndex, index)
         }
         this.build()
+        this.createStyle()
       }
     },
     selectFile () {
@@ -140,6 +182,7 @@ export default {
             }
           }))
           this.build()
+          this.createStyle()
         }
       })
     },
@@ -153,11 +196,14 @@ export default {
       }
       this.$nextTick(() => {
         this.build()
+        this.createStyle()
       })
     },
     exchange (ary, indexA, indexB) {
       if (Array.isArray(ary)) {
-        ary.splice(indexA, 1, ary.splice(indexB, 1, ary[indexA])[0])
+        if (indexA >= 0 && indexA < ary.length && indexB >= 0 && indexB < ary.length) {
+          ary.splice(indexA, 1, ary.splice(indexB, 1, ary[indexA])[0])
+        }
       }
     },
     loadImg (item) {
@@ -174,6 +220,9 @@ export default {
         }
       })
     },
+    buildBefore () {
+      this.build()
+    },
     build (selected) {
       let current
       let count = 0
@@ -185,21 +234,48 @@ export default {
             current = item
           } else if (!selected || !this.isSave) {
             let x = (index % this.num) * (this.width + this.padding * 2)
-            let y = ~~(index / this.num) * (this.width + this.padding * 2)
+            let y = ~~(index / this.num) * (this.height + this.padding * 2)
             this.drawImage(cxt, item, x, y)
           }
           count++
-          if (count === this.files.length - 1 && current) {
-            this.drawImage(cxt, current, selected.x, selected.y)
+          if (count === this.files.length) {
+            current && this.drawImage(cxt, current, selected.x, selected.y)
           }
         })
       })
     },
     drawImage (cxt, item, x, y) {
-      cxt.drawImage(item.img, x, y, item.img.width, item.img.height)
+      cxt.drawImage(item.img, x, y, this.width, this.height)
+    },
+    createStyle () {
+      this.style = ['.cp-icons{\n  background: url(' + this.blobUrl + ') no-repeat left top;\n}\n'].concat(
+        this.files.map((item, index) => {
+          let x = (index % this.num) * (this.width + this.padding * 2)
+          let y = ~~(index / this.num) * (this.height + this.padding * 2)
+          return '.cp-icons.cp-icon-' + index + '{\n  background-position: ' + (x ? -x : x) + 'px ' + (y ? -y : y) + 'px;\n}\n'
+        })
+      ).join('')
     },
     clear () {
       this.files.splice(0)
+      this.style = ''
+    },
+    preview () {
+      this.isPreview = true
+      this.$refs.canvas.toBlob(blob => {
+        this.blobUrl = URL.createObjectURL(blob)
+        this.createStyle()
+        if (!this.styleEl) {
+          this.styleEl = document.createElement('style')
+          this.styleEl.innerHTML = this.style
+          this.$refs.preview.appendChild(this.styleEl)
+        } else {
+          this.styleEl.innerHTML = this.style
+        }
+        if (this.activeNames.indexOf('preview') < 0) {
+          this.activeNames.push('preview')
+        }
+      })
     },
     save () {
       let path = this.tool.path.parse(this.files[this.selecteIndex].path)
@@ -229,11 +305,24 @@ export default {
 </script>
 <style lang="scss" scoped>
 .css-sprite{
-  padding: 10px;
-  .hd{
-    // width: 600px;
-  }
   .bd{
+    /deep/ .el-collapse-item__header{
+      padding: 0px 10px;
+      color: #535c73;
+      font-size: 14px;
+      font-weight: bold;
+      background-color: #ecf5ff;
+    }
+    /deep/ .el-collapse-item__wrap{
+      padding: 10px 10px;
+      .el-collapse-item__content{
+        padding-bottom: 0;
+        line-height: 1.4;
+      }
+    }
+    .el-form-item{
+      margin-bottom: 10px;
+    }
     .handler-icon{
       cursor: pointer;
       i{
@@ -251,6 +340,26 @@ export default {
     }
     .canvas-box{
       padding: 0 10px;
+      canvas{
+        background: #333;
+      }
+    }
+    .style-box {
+      padding: 0 10px;
+      textarea{
+        padding: 5px;
+        width: 100%;
+        height: 120px;
+        border: 1px solid #ddd;
+        outline: none;
+        resize: none;
+      }
+    }
+    .preview{
+      padding: 0 10px;
+      .cp-icons{
+        display: inline-block;
+      }
     }
   }
 }
