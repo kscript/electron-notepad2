@@ -263,7 +263,7 @@ export default {
               if (err === null) {
                 // this.$store.commit('SET_FILE', data)
                 this.content = data
-                console.log(data)
+                // console.log(data)
                 node.opened = node.opened ? 0 : 1
                 resolve(res)
               } else {
@@ -384,7 +384,7 @@ export default {
   .name-list{
     height: 24px;
     width: 100%;
-    background-color: #888;
+    background-color: #222;
     position: relative;
     z-index: 20;
     color: #ccc;

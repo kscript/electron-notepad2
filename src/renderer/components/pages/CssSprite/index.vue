@@ -15,7 +15,7 @@
           <el-input v-model="num" size="mini" style="width: 60px;"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button @click="setCxt" size="mini">生成</el-button>
+          <el-button @click="build" size="mini">生成</el-button>
         </el-form-item>
         <el-form-item>
           <el-button @click="clear" size="mini">清空</el-button>
@@ -88,7 +88,7 @@ export default {
       return (this.width + this.padding * 2) * this.num
     },
     cxtHeight () {
-      return (this.width + this.padding * 2) * Math.round(this.files.length / this.num)
+      return (this.width + this.padding * 2) * Math.ceil(this.files.length / this.num)
     }
   },
   methods: {
@@ -114,12 +114,11 @@ export default {
     },
     onmouseup ($event) {
       if (this.drag) {
+        let index = this.getIndex($event)
         this.drag = false
         this.isSave = false
-        let index = this.getIndex($event)
-        let source = this.files[this.selecteIndex]
         if (this.selecteIndex !== index) {
-          this.files.splice(this.selecteIndex, 1, this.files.splice(index, 1, source)[0])
+          this.exchange(this.files, this.selecteIndex, index)
         }
         this.build()
       }
@@ -135,23 +134,31 @@ export default {
             return {
               path: item,
               file: file,
+              img: null,
               data: 'data:image/png;base64,' + file.toString('base64'),
               name: this.tool.path.parse(item).base
             }
           }))
-          this.setCxt()
+          this.build()
         }
       })
     },
     fileHandler (type, scope) {
       if (type === 'up') {
-        scope.$index > 0 && this.files.splice(scope.$index, 0, this.files.splice(scope.$index - 1, 1)[0])
+        scope.$index > 0 && this.exchange(this.files, scope.$index, scope.$index - 1)
       } else if (type === 'down') {
-        scope.$index < this.files.length - 1 && this.files.splice(scope.$index, 0, this.files.splice(scope.$index + 1, 1)[0])
+        scope.$index < this.files.length - 1 && this.exchange(this.files, scope.$index, scope.$index + 1)
       } else if (type === 'close') {
         this.files.splice(scope.$index, 1)
       }
-      this.build()
+      this.$nextTick(() => {
+        this.build()
+      })
+    },
+    exchange (ary, indexA, indexB) {
+      if (Array.isArray(ary)) {
+        ary.splice(indexA, 1, ary.splice(indexB, 1, ary[indexA])[0])
+      }
     },
     loadImg (item) {
       return new Promise(resolve => {
@@ -167,32 +174,28 @@ export default {
         }
       })
     },
-    setCxt () {
-      this.cxt = this.$refs.canvas.getContext('2d')
-      this.build()
-    },
     build (selected) {
-      let cxt = this.cxt
-      let count = 0
       let current
+      let count = 0
+      let cxt = this.cxt
       cxt.clearRect(0, 0, this.cxtWidth, this.cxtHeight)
       this.files.forEach((item, index) => {
         this.loadImg(item).then(item => {
           if (selected && index === selected.index) {
             current = item
           } else if (!selected || !this.isSave) {
-            this.drawImage(cxt, item, index)
+            let x = (index % this.num) * (this.width + this.padding * 2)
+            let y = ~~(index / this.num) * (this.width + this.padding * 2)
+            this.drawImage(cxt, item, x, y)
           }
           count++
           if (count === this.files.length - 1 && current) {
-            cxt.drawImage(current.img, selected.x, selected.y, current.img.width, current.img.height)
+            this.drawImage(cxt, current, selected.x, selected.y)
           }
         })
       })
     },
-    drawImage (cxt, item, index) {
-      let x = (index % this.num) * (this.width + this.padding * 2)
-      let y = ~~(index / this.num) * (this.width + this.padding * 2)
+    drawImage (cxt, item, x, y) {
       cxt.drawImage(item.img, x, y, item.img.width, item.img.height)
     },
     clear () {
@@ -208,16 +211,19 @@ export default {
         }]
       }, filename => {
         if (filename) {
-          this.imgBuffer = this.$refs.canvas.toDataURL('image/png').replace('data:image/png;base64,', '')
-          this.tool.file.saveFile(filename, Buffer.from(this.imgBuffer, 'base64'), () => {
+          let base64 = this.$refs.canvas.toDataURL('image/png')
+          this.imgBuffer = Buffer.from(base64.replace('data:image/png;base64,', ''), 'base64')
+          this.tool.file.saveFile(filename, this.imgBuffer, () => {
           })
         }
       })
     }
   },
+  mounted () {
+    this.cxt = this.$refs.canvas.getContext('2d')
+  },
   created () {
-    let canvas = document.createElement('canvas')
-    this.offCxt = canvas.getContext('2d')
+    console.log(this)
   }
 }
 </script>
@@ -239,6 +245,9 @@ export default {
       }
     }
     .table-box{
+      img{
+        max-width: 32px;
+      }
     }
     .canvas-box{
       padding: 0 10px;
